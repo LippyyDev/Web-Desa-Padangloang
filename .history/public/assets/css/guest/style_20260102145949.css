@@ -1,0 +1,45 @@
+body {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background-color: #f6f9fb;
+}
+
+.hero-section {
+  background: linear-gradient(
+    135deg,
+    rgba(13, 110, 253, 0.85),
+    rgba(32, 201, 151, 0.75)
+  );
+  min-height: 70vh;
+}
+
+.hero-section .overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.1),
+      transparent 35%
+    ),
+    radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.2), transparent 30%);
+}
+
+.hero-badge {
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.gallery-card img {
+  height: 180px;
+  object-fit: cover;
+}
+
+.mini-stat {
+  border: 1px solid #eef1f5;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(18, 38, 63, 0.05);
+}
+
+.page-wrapper {
+  padding-top: 90px;
+}

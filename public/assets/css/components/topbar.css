@@ -1,0 +1,177 @@
+/* TopBar Component Styles */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* TopBar */
+.topbar {
+    font-family: 'Poppins', sans-serif;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 12px 24px;
+    position: sticky;
+    top: 16px;
+    z-index: 100;
+    margin: 0 16px;
+    border-radius: 12px;
+}
+
+.sidebar-toggle-open {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #495057;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    margin-right: 16px;
+    display: none;
+}
+
+.sidebar-toggle-open:hover {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.topbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topbar-left {
+    flex: 1;
+}
+
+.topbar-greeting {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 2px;
+}
+
+.topbar-date {
+    font-size: 12px;
+    color: #6c757d;
+    display: flex;
+    gap: 6px;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notification-icon {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.notification-icon:hover {
+    background-color: #e9ecef;
+    color: #2563eb;
+}
+
+.notification-icon i {
+    font-size: 18px;
+}
+
+.home-icon {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.home-icon:hover {
+    background-color: #e9ecef;
+    color: #2563eb;
+}
+
+.home-icon i {
+    font-size: 18px;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+    border: 2px solid white;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+}
+
+.profile-image {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.profile-image:hover {
+    border-color: #2563eb;
+}
+
+/* Responsive Styles */
+@media (max-width: 1400px) {
+    .sidebar-toggle-open {
+        display: block;
+    }
+}
+
+@media (max-width: 991px) {
+    .topbar {
+        margin: 0 12px;
+        top: 12px;
+        padding: 10px 20px;
+    }
+}
+
+@media (max-width: 767px) {
+    .topbar {
+        margin: 0 8px;
+        top: 8px;
+        padding: 10px 14px;
+        border-radius: 10px;
+    }
+    
+    .topbar-greeting {
+        display: none;
+    }
+    
+    .topbar-date {
+        display: none;
+    }
+}
+
