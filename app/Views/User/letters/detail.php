@@ -79,7 +79,7 @@
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
                                 <div class="fw-semibold"><?= esc($namaPengirim) ?></div>
-                                <div class="small text-muted"><?= date('d M Y H:i', strtotime($reply['created_at'])) ?></div>
+                                <div class="small text-muted"><?= date('d M Y H:i', strtotime($reply['created_at'])) ?> WITA</div>
                             </div>
                         </div>
                         <div class="text-muted mb-2"><?= nl2br($reply['reply_text']) ?></div>

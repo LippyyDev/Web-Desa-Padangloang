@@ -139,7 +139,7 @@
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
                                 <div class="fw-semibold"><?= esc($namaPengirim) ?></div>
-                                <div class="small text-muted"><?= date('d M Y H:i', strtotime($reply['created_at'])) ?></div>
+                                <div class="small text-muted"><?= date('d M Y H:i', strtotime($reply['created_at'])) ?> WITA</div>
                             </div>
                             <?php if ($reply['staff_id'] == $currentStaffId): ?>
                             <div>

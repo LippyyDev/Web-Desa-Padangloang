@@ -24,7 +24,7 @@
                 <div class="small text-muted mt-1"><?= esc($notif['message']) ?></div>
             </div>
             <div class="text-end">
-                <div class="small text-muted"><?= date('d M Y H:i', strtotime($notif['created_at'])) ?></div>
+                <div class="small text-muted"><?= date('d M Y H:i', strtotime($notif['created_at'])) ?> WITA</div>
                 <?php if (!(bool) $notif['is_read']): ?>
                     <span class="badge bg-primary rounded-pill mt-2">Baru</span>
                 <?php endif; ?>

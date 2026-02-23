@@ -23,11 +23,7 @@ $routes->get('/project/(:num)/ajax', 'Guest\LandingController::detailProjectAjax
 $routes->get('/login', 'Guest\AuthController::login');
 $routes->post('/login', 'Guest\AuthController::doLogin');
 $routes->get('/register', 'Guest\AuthController::register');
-$routes->post('/register', 'Guest\AuthController::doRegister');
 $routes->post('/auth/firebase', 'Guest\AuthController::firebaseAuth');
-$routes->get('/verify', 'Guest\AuthController::verify');
-$routes->post('/verify', 'Guest\AuthController::doVerify');
-$routes->get('/verify/(:segment)', 'Guest\AuthController::verifyByLink/$1');
 $routes->post('/auth/resend-reset-otp', 'Guest\AuthController::resendResetOtp');
 
 // Email queue processing endpoint (untuk AJAX/cron)

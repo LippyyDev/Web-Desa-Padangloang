@@ -26,7 +26,8 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Thumbnail</label>
-                    <input type="file" class="form-control" name="thumbnail">
+                    <input type="file" class="form-control" id="thumbnailInput" name="thumbnail" accept="image/jpeg,image/jpg,image/png,image/webp">
+                    <div id="thumbnailPreview" class="mt-2"></div>
                 </div>
                 <div class="col-12">
                     <label class="form-label">Isi Berita</label>
@@ -37,7 +38,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Foto (opsional, multiple)</label>
-                    <input type="file" class="form-control" name="media[]" multiple>
+                    <input type="file" class="form-control" id="mediaInput" name="media[]" multiple accept="image/jpeg,image/jpg,image/png,image/webp">
+                    <div id="mediaPreview" class="row g-2 mt-2"></div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Link Video</label>
@@ -132,6 +134,80 @@
             
             // Set content to textarea
             textarea.value = content;
+        });
+
+        // Preview Thumbnail
+        const thumbnailInput = document.getElementById('thumbnailInput');
+        const thumbnailPreview = document.getElementById('thumbnailPreview');
+        thumbnailInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    thumbnailPreview.innerHTML = '<img src="' + e.target.result + '" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: cover;">';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                thumbnailPreview.innerHTML = '';
+            }
+        });
+
+        // Preview Media Foto (dengan DataTransfer + tombol hapus)
+        const mediaInput = document.getElementById('mediaInput');
+        const mediaPreview = document.getElementById('mediaPreview');
+        let selectedFiles = [];
+        let fileIdCounter = 0;
+
+        function updateFileInput() {
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(fileObj => dataTransfer.items.add(fileObj.file));
+            mediaInput.files = dataTransfer.files;
+        }
+
+        function renderPreview() {
+            mediaPreview.innerHTML = '';
+            selectedFiles.forEach((fileObj) => {
+                if (fileObj.file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-3';
+                        col.setAttribute('data-file-id', fileObj.id);
+                        col.innerHTML = `
+                            <div class="border rounded p-2 text-center position-relative">
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" style="width: 28px; height: 28px; padding: 0; line-height: 1; border-radius: 50%;" onclick="removeFile('${fileObj.id}')" title="Hapus">
+                                    <span style="font-size: 18px;">×</span>
+                                </button>
+                                <img src="${e.target.result}" class="img-fluid rounded" style="max-width: 100%; max-height: 150px; object-fit: cover;" alt="preview">
+                            </div>
+                        `;
+                        mediaPreview.appendChild(col);
+                    };
+                    reader.readAsDataURL(fileObj.file);
+                }
+            });
+        }
+
+        function removeFile(fileId) {
+            selectedFiles = selectedFiles.filter(f => f.id !== fileId);
+            updateFileInput();
+            renderPreview();
+        }
+        window.removeFile = removeFile;
+
+        mediaInput.addEventListener('change', function(e) {
+            Array.from(e.target.files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const isDuplicate = selectedFiles.some(f =>
+                        f.file.name === file.name && f.file.size === file.size && f.file.lastModified === file.lastModified
+                    );
+                    if (!isDuplicate) {
+                        selectedFiles.push({ id: 'file_' + (fileIdCounter++), file });
+                    }
+                }
+            });
+            updateFileInput();
+            renderPreview();
         });
 
         // Video links functionality

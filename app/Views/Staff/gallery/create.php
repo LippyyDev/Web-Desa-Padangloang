@@ -143,9 +143,6 @@
             
             updateFileInput();
             renderPreview();
-            
-            // Reset input file agar bisa memilih file yang sama lagi jika perlu
-            mediaInput.value = '';
         });
 
         // Video Links

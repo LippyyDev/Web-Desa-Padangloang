@@ -12,36 +12,7 @@
                 <h1 class="auth-title">Daftar Akun</h1>
                 <p class="auth-subtitle">Buat akun warga untuk mengajukan surat dan memantau status.</p>
             </div>
-
-            <form method="post" action="<?= base_url('/register') ?>">
-                <?= csrf_field() ?>
-                
-                <div class="mb-4">
-                    <label class="auth-form-label">Username</label>
-                    <input type="text" class="auth-form-control" name="username" value="<?= old('username') ?>" placeholder="username" required>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="auth-form-label">Email</label>
-                    <input type="email" class="auth-form-control" name="email" value="<?= old('email') ?>" placeholder="contoh@email.com" required>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="auth-form-label">Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" class="auth-form-control" name="password" placeholder="••••••••" required>
-                        <button type="button" class="password-toggle">
-                            <i class="bi bi-eye-slash"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <button class="btn-auth-primary mb-4" type="submit">Daftar Sekarang</button>
-            </form>
-            
-            <div class="auth-divider">
-                <span>atau daftar dengan</span>
-            </div>
+            <div style="margin-top: 2rem;"></div>
             
             <button type="button" class="btn-auth-google" id="btnGoogleSignIn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">

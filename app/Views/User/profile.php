@@ -98,10 +98,12 @@
         <form method="post" action="<?= base_url('/user/profil/ubah-password') ?>">
             <?= csrf_field() ?>
             <div class="row g-3">
+                <?php if (!empty($user['password_hash'])): ?>
                 <div class="col-md-12">
                     <label class="form-label">Masukkan Password Lama</label>
                     <input type="password" class="form-control" name="old_password" required>
                 </div>
+                <?php endif; ?>
                 <div class="col-md-6">
                     <label class="form-label">Masukkan Password Baru</label>
                     <input type="password" class="form-control" name="new_password" required>

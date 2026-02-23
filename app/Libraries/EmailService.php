@@ -13,13 +13,11 @@ class EmailService
 
     public function __construct()
     {
-        // Pastikan autoload dimuat sebelum menggunakan PHPMailer
-        $this->ensureAutoload();
-        
         $this->config = config('Email');
         $this->queueModel = new EmailQueueModel();
-        $this->mailer = new \PHPMailer\PHPMailer\PHPMailer(true);
-        $this->configure();
+        // Tidak perlu inisialisasi PHPMailer di sini.
+        // EmailService hanya menulis ke email_queue (DB).
+        // PHPMailer digunakan oleh EmailQueueProcessor saat benar-benar mengirim.
     }
     
     /**
@@ -46,69 +44,6 @@ class EmailService
         }
     }
     
-    /**
-     * Memastikan vendor autoload dimuat
-     */
-    protected function ensureAutoload(): void
-    {
-        if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-            // Coba beberapa path yang mungkin
-            $autoloadPaths = [
-                defined('COMPOSER_PATH') && file_exists(COMPOSER_PATH) ? COMPOSER_PATH : null,
-                defined('ROOTPATH') && file_exists(ROOTPATH . 'vendor/autoload.php') ? ROOTPATH . 'vendor/autoload.php' : null,
-                __DIR__ . '/../../vendor/autoload.php',  // Relatif dari Libraries
-            ];
-            
-            foreach ($autoloadPaths as $path) {
-                if ($path && file_exists($path)) {
-                    require_once $path;
-                    break;
-                }
-            }
-            
-            // Jika masih belum ter-load, coba load langsung dari vendor
-            if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-                $phpmailerPath = __DIR__ . '/../../vendor/phpmailer/phpmailer/src/PHPMailer.php';
-                if (file_exists($phpmailerPath)) {
-                    require_once $phpmailerPath;
-                    require_once __DIR__ . '/../../vendor/phpmailer/phpmailer/src/SMTP.php';
-                    require_once __DIR__ . '/../../vendor/phpmailer/phpmailer/src/Exception.php';
-                }
-            }
-        }
-    }
-
-    protected function configure()
-    {
-        try {
-            // Server settings
-            $this->mailer->isSMTP();
-            $this->mailer->Host       = $this->config->SMTPHost;
-            $this->mailer->SMTPAuth   = true;
-            $this->mailer->Username   = $this->config->SMTPUser;
-            $this->mailer->Password   = $this->config->SMTPPass;
-            $this->mailer->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-            $this->mailer->Port       = $this->config->SMTPPort;
-            $this->mailer->CharSet    = $this->config->charset;
-
-            // Sender
-            $this->mailer->setFrom($this->config->fromEmail, $this->config->fromName);
-        } catch (\PHPMailer\PHPMailer\Exception $e) {
-            log_message('error', 'EmailService configuration error: ' . $this->mailer->ErrorInfo);
-        }
-    }
-
-    /**
-     * Mengirim email OTP dan link untuk verifikasi registrasi
-     */
-    public function sendOtpRegister(string $toEmail, string $toName, string $otp, string $verificationLink): bool
-    {
-        $subject = 'Verifikasi Akun - Kode OTP';
-        $body = $this->getOtpRegisterTemplate($toName, $otp, $verificationLink);
-        
-        // Tambahkan ke queue
-        return $this->queueEmail($toEmail, $subject, $body);
-    }
 
     /**
      * Mengirim email OTP untuk reset password
@@ -132,19 +67,6 @@ class EmailService
         
         // Tambahkan ke queue
         return $this->queueEmail($toEmail, $subject, $body);
-    }
-
-    /**
-     * Template HTML untuk email OTP Register dengan link verifikasi
-     */
-    protected function getOtpRegisterTemplate(string $name, string $otp, string $verificationLink): string
-    {
-        $headerImageUrl = 'https://image2url.com/r2/bucket3/images/1767877728084-f96e49d3-6eda-406d-875b-ce1d2ce76a27.png';
-        $nameEscaped = htmlspecialchars($name);
-        $otpEscaped = htmlspecialchars($otp);
-        $linkEscaped = htmlspecialchars($verificationLink);
-        
-        return "<!DOCTYPE html><html lang='id'><head><meta charset='UTF-8'><meta http-equiv='X-UA-Compatible' content='IE=edge'><meta name='viewport' content='width=device-width,initial-scale=1.0'><link href='https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap' rel='stylesheet'></head><body style='margin:0;padding:0;background:#f5f7fb;font-family:Poppins,Arial,sans-serif;color:#1f2933'><table role='presentation' cellspacing='0' cellpadding='0' border='0' align='center' width='100%' style='background:#f5f7fb;padding:24px 0'><tr><td align='center'><table role='presentation' cellspacing='0' cellpadding='0' border='0' width='560' style='background:#ffffff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.05);border:1px solid #e5e7eb;overflow:hidden'><tr><td style='padding:24px 24px 8px 24px;text-align:center'><img src='{$headerImageUrl}' alt='Desa Padang Loang' style='max-width:100%;height:auto;display:block;margin:0 auto 12px auto'></td></tr><tr><td style='padding:0 24px 8px 24px'><h1 style='margin:0;font-size:22px;font-weight:600;color:#111827'>Halo {$nameEscaped},</h1></td></tr><tr><td style='padding:0 24px 16px 24px;font-size:14px;line-height:1.6;color:#4b5563'>Terima kasih telah mendaftar di Website Padang Loang. Untuk menyelesaikan proses registrasi, silakan gunakan kode OTP berikut:</td></tr><tr><td style='padding:0 24px 16px 24px;text-align:center'><div style='display:inline-block;background:#f3f4f6;border:1px dashed #cbd5e1;border-radius:10px;padding:18px 24px;font-size:24px;letter-spacing:6px;font-weight:600;color:#111827'>{$otpEscaped}</div></td></tr><tr><td style='padding:0 24px 16px 24px;text-align:center'><a href='{$linkEscaped}' style='display:inline-block;background:#5f2eea;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px'>Verifikasi Akun</a><div style='margin-top:12px;font-size:13px;color:#6b7280;word-break:break-all'>Atau salin tautan ini:<br>{$linkEscaped}</div></td></tr><tr><td style='padding:0 24px 16px 24px;font-size:14px;line-height:1.6;color:#4b5563;text-align:center'>Kode OTP dan link verifikasi berlaku selama <strong>1 jam</strong>. Jangan bagikan kode atau link ini kepada siapa pun.</td></tr><tr><td style='padding:14px 24px 18px 24px;font-size:12px;line-height:1.6;color:#6b7280;text-align:center'>Jika Anda tidak melakukan registrasi, abaikan email ini dengan aman.</td></tr><tr><td style='padding:0 24px 24px 24px;font-size:13px;color:#9ca3af;text-align:center'>&copy; " . date('Y') . " Website Padang Loang. All rights reserved.</td></tr></table></td></tr></table></body></html>";
     }
 
     /**

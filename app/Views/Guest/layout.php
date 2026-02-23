@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/guest/style.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/components/guest-navbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/guest/components.css') ?>">
+    <?= csrf_meta() ?>
     <style>
         /* Mobile-style Slide Notification - Dark Glassmorphism */
         .slide-notification {
@@ -218,7 +219,7 @@ function getIcon(type) {
     function processEmailQueue() {
         // Use fetch with keepalive to ensure request completes even if page unloads
         fetch('<?= base_url('/api/email-queue/process') ?>', {
-            method: 'POST',
+            method: 'GET',
             keepalive: true,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'

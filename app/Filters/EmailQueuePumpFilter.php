@@ -52,6 +52,17 @@ class EmailQueuePumpFilter implements FilterInterface
             return;
         }
 
+        // Skip AJAX/XHR requests (DataTables, fetch, dll)
+        // Agar DataTables tidak ikut memblokir karena SMTP processing
+        if (strtolower($request->getHeaderLine('X-Requested-With')) === 'xmlhttprequest') {
+            return;
+        }
+
+        // Skip GET requests — hanya pump email saat POST (kirim surat, balas, dll)
+        if (strtoupper($request->getMethod()) === 'GET') {
+            return;
+        }
+
         // Proses email di background menggunakan register_shutdown_function
         // Ini memastikan response dikirim dulu sebelum memproses email
         register_shutdown_function(function() {

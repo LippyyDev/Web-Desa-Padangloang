@@ -131,7 +131,7 @@ document.addEventListener('click', async function(e) {
     
     function processEmailQueue() {
         fetch('<?= base_url('/api/email-queue/process') ?>', {
-            method: 'POST',
+            method: 'GET',
             keepalive: true,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'

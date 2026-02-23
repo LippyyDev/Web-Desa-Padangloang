@@ -120,9 +120,11 @@ class ProfileController extends ProtectedController
         $newPassword = $this->request->getPost('new_password');
         $confirmPassword = $this->request->getPost('confirm_password');
 
-        // Validasi password lama
-        if (!password_verify($oldPassword, $user['password_hash'])) {
-            return redirect()->to('/user/profil')->with('error', 'Password lama tidak sesuai.');
+        // Validasi password lama jika user sudah punya password
+        if (!empty($user['password_hash'])) {
+            if (!password_verify($oldPassword, $user['password_hash'])) {
+                return redirect()->to('/user/profil')->with('error', 'Password lama tidak sesuai.');
+            }
         }
 
         // Validasi password baru dan konfirmasi
