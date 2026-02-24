@@ -1,0 +1,68 @@
+/* =========================================
+   PROFILE - Profile photo widget
+   ========================================= */
+
+/* Profile Photo */
+.profile-photo-container {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.profile-photo-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.profile-photo-wrapper:hover {
+  transform: scale(1.05);
+}
+
+.profile-photo {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid #e9ecef;
+  transition: all 0.3s;
+  display: block;
+}
+
+.profile-photo-wrapper:hover .profile-photo {
+  border-color: #2563eb;
+  filter: brightness(0.7);
+}
+
+.profile-photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 50%;
+}
+
+.profile-photo-wrapper:hover .profile-photo-overlay {
+  opacity: 1;
+}
+
+.profile-photo-overlay i {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.profile-photo-overlay span {
+  font-size: 12px;
+  font-weight: 500;
+}

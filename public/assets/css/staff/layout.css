@@ -1,0 +1,27 @@
+/* =========================================
+   LAYOUT - App Wrapper, Main Content, Content Area
+   ========================================= */
+
+/* App Wrapper */
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-left: 260px;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* Content Area */
+.content-area {
+  flex: 1;
+  padding: 28px 20px;
+  margin-top: 12px;
+  overflow-y: auto;
+}

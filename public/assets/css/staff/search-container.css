@@ -1,0 +1,117 @@
+/* =========================================
+   SEARCH CONTAINER - Multi-page search input containers
+   (Gallery, News, Project, Perangkat, Letter)
+   ========================================= */
+
+/* Gallery Search Container */
+.gallery-search-container,
+.news-search-container,
+.project-search-container,
+.perangkat-search-container,
+.letter-search-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.gallery-search-container .input-group,
+.news-search-container .input-group,
+.project-search-container .input-group,
+.perangkat-search-container .input-group,
+.letter-search-container .input-group {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  margin: 0;
+}
+
+.gallery-search-container .input-group-text,
+.news-search-container .input-group-text,
+.project-search-container .input-group-text,
+.perangkat-search-container .input-group-text,
+.letter-search-container .input-group-text {
+  border-radius: 10px 0 0 10px;
+  border: 2px solid #e9ecef;
+  border-right: none;
+  background: #f8f9fa;
+  color: #6c757d;
+  padding: 0.625rem 1rem;
+}
+
+.gallery-search-container .input-group #searchInput,
+.news-search-container .input-group #searchInput,
+.project-search-container .input-group #searchInput,
+.perangkat-search-container .input-group #searchInput,
+.letter-search-container .input-group #searchInput {
+  border-radius: 0;
+  border: 2px solid #e9ecef;
+  border-left: none;
+  border-right: none;
+  padding: 0.625rem 1rem;
+  flex: 1;
+  min-width: 0;
+  transition: all 0.3s ease;
+}
+
+/* Ketika tidak ada tombol clear, form-control rounded di kanan */
+.gallery-search-container .input-group:not(.has-clear-btn) #searchInput,
+.news-search-container .input-group:not(.has-clear-btn) #searchInput,
+.project-search-container .input-group:not(.has-clear-btn) #searchInput,
+.perangkat-search-container .input-group:not(.has-clear-btn) #searchInput,
+.letter-search-container .input-group:not(.has-clear-btn) #searchInput {
+  border-radius: 0 10px 10px 0;
+  border-right: 2px solid #e9ecef;
+}
+
+.gallery-search-container .input-group #searchInput:focus,
+.news-search-container .input-group #searchInput:focus,
+.project-search-container .input-group #searchInput:focus,
+.perangkat-search-container .input-group #searchInput:focus,
+.letter-search-container .input-group #searchInput:focus {
+  border-left: 2px solid #2563eb;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+  transform: translateY(-1px);
+  z-index: 1;
+}
+
+/* Ketika tidak ada tombol clear dan focus, tetap rounded kanan */
+.gallery-search-container .input-group:not(.has-clear-btn) #searchInput:focus,
+.news-search-container .input-group:not(.has-clear-btn) #searchInput:focus,
+.project-search-container .input-group:not(.has-clear-btn) #searchInput:focus,
+.perangkat-search-container .input-group:not(.has-clear-btn) #searchInput:focus,
+.letter-search-container .input-group:not(.has-clear-btn) #searchInput:focus {
+  border-right: 2px solid #2563eb;
+}
+
+/* Ketika ada tombol clear, form-control tidak rounded kanan */
+.gallery-search-container .input-group.has-clear-btn #searchInput,
+.news-search-container .input-group.has-clear-btn #searchInput,
+.project-search-container .input-group.has-clear-btn #searchInput,
+.perangkat-search-container .input-group.has-clear-btn #searchInput,
+.letter-search-container .input-group.has-clear-btn #searchInput {
+  border-radius: 0;
+  border-right: none;
+}
+
+.gallery-search-container .input-group.has-clear-btn #searchInput:focus,
+.news-search-container .input-group.has-clear-btn #searchInput:focus,
+.project-search-container .input-group.has-clear-btn #searchInput:focus,
+.perangkat-search-container .input-group.has-clear-btn #searchInput:focus,
+.letter-search-container .input-group.has-clear-btn #searchInput:focus {
+  border-right: 2px solid #2563eb;
+}
+
+.gallery-search-container .input-group #clearSearchBtn,
+.news-search-container .input-group #clearSearchBtn,
+.project-search-container .input-group #clearSearchBtn,
+.perangkat-search-container .input-group #clearSearchBtn,
+.letter-search-container .input-group #clearSearchBtn {
+  border-radius: 0 10px 10px 0;
+  border: 2px solid #e9ecef;
+  border-left: none;
+  margin-left: 0;
+  padding: 0.625rem 1rem;
+  transition: all 0.3s ease;
+}

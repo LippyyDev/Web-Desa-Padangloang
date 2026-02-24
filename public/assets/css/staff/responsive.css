@@ -1,0 +1,148 @@
+/* =========================================
+   RESPONSIVE - Media queries untuk semua breakpoint
+   ========================================= */
+
+/* Responsive Styles */
+@media (max-width: 1400px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 991px) {
+  .content-area {
+    padding: 24px 16px;
+    margin-top: 10px;
+  }
+
+  .stat-card {
+    padding: 1.25rem;
+  }
+
+  /* Responsive - Hide/Show Views */
+  .desktop-table-view {
+    display: none !important;
+  }
+
+  .mobile-card-view {
+    display: block !important;
+  }
+}
+
+@media (min-width: 992px) {
+  .desktop-table-view {
+    display: block !important;
+  }
+
+  .mobile-card-view {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .content-area {
+    padding: 20px 12px;
+    margin-top: 8px;
+  }
+
+  .page-header h4 {
+    font-size: 1.25rem;
+  }
+
+  .page-header {
+    padding: 1.25rem 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .page-header .page-header-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .page-header .page-header-actions {
+    gap: 0.5rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .card-body {
+    padding: 1.25rem;
+  }
+
+  .letter-card-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .letter-card-title {
+    font-size: 0.95rem;
+    margin-right: 0.75rem;
+  }
+
+  .letter-card-badge {
+    flex-shrink: 0;
+  }
+
+  .letter-card-body {
+    padding: 1rem;
+  }
+
+  .letter-card-item {
+    font-size: 0.85rem;
+  }
+
+  .letter-card-actions {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+
+  .letter-card-actions .btn {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.8rem;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  /* Template Section Mobile */
+  .template-title {
+    font-weight: 700;
+    color: #212529;
+    font-size: 1.25rem !important;
+    margin-bottom: 0.25rem;
+  }
+
+  .template-description {
+    font-size: 0.8125rem !important;
+    color: #6c757d;
+  }
+
+  .template-buttons .template-btn {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+
+  .template-buttons .template-btn i {
+    font-size: 0.875rem;
+    margin-right: 0.25rem;
+  }
+
+  .template-buttons .template-btn span {
+    font-size: 0.7rem;
+    word-break: break-word;
+  }
+}

@@ -29,6 +29,7 @@ class DashboardController extends ProtectedController
             'newsCount'    => $newsModel->countAllResults(),
             'projectCount' => $projectModel->countAllResults(),
             'albumCount'   => $albumModel->countAllResults(),
+            'recentAccounts' => $userModel->orderBy('created_at', 'DESC')->limit(5)->find(),
         ]);
     }
 }

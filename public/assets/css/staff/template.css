@@ -1,0 +1,27 @@
+/* =========================================
+   TEMPLATE - Template section (title, description, buttons)
+   untuk halaman pembuatan surat
+   ========================================= */
+
+/* Template Section Desktop */
+.template-title {
+  font-weight: 700;
+  color: #212529;
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.template-description {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.template-buttons .template-btn {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.template-buttons .template-btn i {
+  margin-right: 0.5rem;
+}
