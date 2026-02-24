@@ -9,7 +9,7 @@ $menus = match($role) {
     'admin' => [
         ['label' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'bi-speedometer2'],
         ['label' => 'Kelola Akun', 'url' => '/admin/akun', 'icon' => 'bi-people'],
-        ['label' => 'Profil Admin', 'url' => '/admin/profil', 'icon' => 'bi-person'],
+        ['label' => 'Profil', 'url' => '/admin/profil', 'icon' => 'bi-person'],
     ],
     'staf' => [
         ['label' => 'Dashboard', 'url' => '/staff/dashboard', 'icon' => 'bi-speedometer2'],

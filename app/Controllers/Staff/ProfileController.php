@@ -97,9 +97,23 @@ class ProfileController extends ProtectedController
             $profileModel->insert($data);
         }
 
+        // Validasi duplikat username dan email (kecuali milik staff sendiri)
+        $newUsername = trim($this->request->getPost('username'));
+        $newEmail    = trim($this->request->getPost('email'));
+
+        $duplicateUsername = $userModel->where('id !=', $uid)->where('username', $newUsername)->first();
+        if ($duplicateUsername) {
+            return redirect()->to('/staff/profil')->with('error', 'Username "' . esc($newUsername) . '" sudah digunakan oleh pengguna lain.');
+        }
+
+        $duplicateEmail = $userModel->where('id !=', $uid)->where('email', $newEmail)->first();
+        if ($duplicateEmail) {
+            return redirect()->to('/staff/profil')->with('error', 'Email "' . esc($newEmail) . '" sudah digunakan oleh pengguna lain.');
+        }
+
         $userModel->update($uid, [
-            'username' => $this->request->getPost('username'),
-            'email' => $this->request->getPost('email'),
+            'username' => $newUsername,
+            'email'    => $newEmail,
         ]);
 
         return redirect()->to('/staff/profil')->with('success', 'Profil diperbarui.');
