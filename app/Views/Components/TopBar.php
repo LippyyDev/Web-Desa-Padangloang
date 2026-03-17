@@ -30,24 +30,32 @@ $notificationUrl = match($currentUser['role'] ?? '') {
             <i class="bi bi-list"></i>
         </button>
         <div class="topbar-left">
-            <h5 class="topbar-greeting">
-                <?php
-                $hour = (int)date('H');
-                if ($hour < 12) {
-                    echo 'Selamat pagi';
-                } elseif ($hour < 15) {
-                    echo 'Selamat siang';
-                } elseif ($hour < 19) {
-                    echo 'Selamat sore';
-                } else {
-                    echo 'Selamat malam';
-                }
-                ?>, <?= esc($userName) ?>
-            </h5>
+            <?php
+            $hour = (int)date('H');
+            $timeIcon = '';
+            $greeting = '';
+            if ($hour >= 5 && $hour < 11) {
+                $greeting = 'Selamat pagi';
+                $timeIcon = 'bi-sunrise';
+            } elseif ($hour >= 11 && $hour < 15) {
+                $greeting = 'Selamat siang';
+                $timeIcon = 'bi-sun';
+            } elseif ($hour >= 15 && $hour < 18) {
+                $greeting = 'Selamat sore';
+                $timeIcon = 'bi-sunset';
+            } else {
+                $greeting = 'Selamat malam';
+                $timeIcon = 'bi-moon-stars';
+            }
+            ?>
             <div class="topbar-date">
+                <i class="bi <?= $timeIcon ?> time-icon"></i>
                 <span id="current-date"></span>
                 <span id="current-time"></span>
             </div>
+            <h5 class="topbar-greeting">
+                <?= $greeting ?>, <?= esc($userName) ?>
+            </h5>
         </div>
         <div class="topbar-right">
         <a href="<?= base_url('/') ?>" class="home-icon" title="Kembali ke Beranda">
@@ -59,11 +67,32 @@ $notificationUrl = match($currentUser['role'] ?? '') {
                     <span class="notification-badge"><?= $unreadCount > 99 ? '99+' : $unreadCount ?></span>
                 <?php endif; ?>
             </a>
-            <div class="user-profile">
+            <div class="user-profile" id="userProfileToggle">
                 <img src="<?= esc($userPhoto) ?>" alt="Profile" class="profile-image">
                 <div class="user-info">
                     <span class="user-name"><?= esc($currentUser['username'] ?? 'User') ?></span>
                     <span class="user-role"><?= esc(ucfirst($currentUser['role'] ?? 'User')) ?></span>
+                </div>
+                <i class="bi bi-chevron-down profile-dropdown-icon"></i>
+                
+                <div class="profile-dropdown-menu" id="profileDropdown">
+                    <?php
+                    $profileUrl = match($currentUser['role'] ?? '') {
+                        'admin' => base_url('/admin/profil'),
+                        'staf' => base_url('/staff/profil'),
+                        'user' => base_url('/user/profil'),
+                        default => '#'
+                    };
+                    ?>
+                    <a href="<?= $profileUrl ?>" class="dropdown-item">
+                        <i class="bi bi-person"></i>
+                        <span>Profil Saya</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="<?= base_url('/logout') ?>" class="dropdown-item text-danger">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Logout</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -98,5 +127,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     updateDateTime();
     setInterval(updateDateTime, 1000);
+    
+    // Profile Dropdown Toggle
+    const userProfileToggle = document.getElementById('userProfileToggle');
+    if (userProfileToggle) {
+        userProfileToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!userProfileToggle.contains(e.target)) {
+                userProfileToggle.classList.remove('active');
+            }
+        });
+    }
 });
 </script>

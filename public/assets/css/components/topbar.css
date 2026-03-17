@@ -1,4 +1,4 @@
-﻿/* TopBar Component Styles */
+/* TopBar Component Styles */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
 /* TopBar */
@@ -42,19 +42,26 @@
   flex: 1;
 }
 
+.topbar-date {
+  font-size: 13px;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+.time-icon {
+  font-size: 11px;
+  color: inherit;
+}
+
 .topbar-greeting {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: #212529;
-  margin-bottom: 2px;
-}
-
-.topbar-date {
-  font-size: 12px;
-  color: #6c757d;
-  display: flex;
-  gap: 6px;
 }
 
 .topbar-right {
@@ -116,25 +123,46 @@
   background-color: #dc3545;
   color: white;
   border-radius: 10px;
-  padding: 2px 4px;
-  font-size: 10px;
+  padding: 1px 4px;
+  font-size: 9px;
   font-weight: 600;
-  min-width: 16px;
+  min-width: 15px;
   text-align: center;
-  border: 2px solid white;
+  border: 1px solid white;
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+  }
+  
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(220, 53, 69, 0);
+  }
+  
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+  }
 }
 
 .user-profile {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: poPoppins;
+  border-radius: 8px;
 }
 
 .user-info {
   display: flex;
   flex-direction: column;
   text-align: left;
+  margin-right: 4px;
 }
 
 .user-name {
@@ -157,13 +185,94 @@
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #e9ecef;
+  border: 2px solid #2563eb;
+  padding: 2px;
+  background-color: white;
   cursor: poPoppins;
   transition: all 0.2s;
 }
 
 .profile-image:hover {
-  border-color: #2563eb;
+  border-color: #1d4ed8;
+}
+
+.profile-dropdown-icon {
+  font-size: 12px;
+  color: #64748b;
+  transition: transform 0.2s;
+}
+
+.user-profile.active .profile-dropdown-icon {
+  transform: rotate(180deg);
+}
+
+.profile-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  padding: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.user-profile.active .profile-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: #475569;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #1e293b;
+}
+
+.dropdown-item i {
+  font-size: 16px;
+  color: #64748b;
+  transition: color 0.2s;
+}
+
+.dropdown-item:hover i {
+  color: #2563eb;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: rgba(0,0,0,0.05);
+  margin: 6px 0;
+}
+
+.dropdown-item.text-danger {
+  color: #ef4444;
+}
+.dropdown-item.text-danger i {
+  color: #ef4444;
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: #fef2f2;
 }
 
 /* Responsive Styles */
@@ -191,6 +300,11 @@
 
   .user-info {
     display: none;
+  }
+
+  .user-profile {
+    gap: 4px;
+    padding: 2px 6px;
   }
 
   .topbar-greeting {
