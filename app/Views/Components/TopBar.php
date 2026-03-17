@@ -61,6 +61,10 @@ $notificationUrl = match($currentUser['role'] ?? '') {
             </a>
             <div class="user-profile">
                 <img src="<?= esc($userPhoto) ?>" alt="Profile" class="profile-image">
+                <div class="user-info">
+                    <span class="user-name"><?= esc($currentUser['username'] ?? 'User') ?></span>
+                    <span class="user-role"><?= esc(ucfirst($currentUser['role'] ?? 'User')) ?></span>
+                </div>
             </div>
         </div>
     </div>

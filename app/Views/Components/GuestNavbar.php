@@ -75,7 +75,7 @@ $dashboardUrl = match($userRole) {
                         <div class="user-profile-dropdown">
                             <button class="user-profile-btn" type="button" id="userProfileBtn">
                                 <img src="<?= esc($userPhoto) ?>" alt="Profile" class="user-profile-img">
-                                <span class="user-profile-name"><?= esc($userName) ?></span>
+                                <span class="user-profile-name"><?= esc($currentUser['username'] ?? 'User') ?></span>
                                 <i class="bi bi-chevron-down"></i>
                             </button>
                             <div class="user-profile-menu" id="userProfileMenu">
