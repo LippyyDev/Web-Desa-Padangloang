@@ -1,4 +1,4 @@
-/* Guest Navbar Styles */
+﻿/* Guest Navbar Styles */
 .guest-navbar {
     position: fixed;
     top: 0;
@@ -151,7 +151,7 @@
     font-family: 'Poppins', sans-serif;
     text-decoration: none;
     transition: all 0.3s ease;
-    cursor: pointer;
+    cursor: poPoppins;
     white-space: nowrap;
 }
 
@@ -176,7 +176,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0.5rem 1rem;
     border-radius: 12px;
-    cursor: pointer;
+    cursor: poPoppins;
     transition: all 0.2s ease;
     color: #e2e8f0;
 }
@@ -247,7 +247,7 @@
     width: 40px;
     height: 40px;
     position: relative;
-    cursor: pointer;
+    cursor: poPoppins;
     z-index: 1002;
     padding: 0;
 }
@@ -383,3 +383,6 @@
         display: none;
     }
 }
+
+
+

@@ -4,29 +4,51 @@ $role = $currentUser['role'] ?? '';
 $currentUrl = current_url();
 $basePath = base_url();
 
-// Menentukan menu berdasarkan role
+// Menentukan menu berdasarkan role dengan kategori (satu kata)
 $menus = match($role) {
     'admin' => [
-        ['label' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'bi-speedometer2'],
-        ['label' => 'Kelola Akun', 'url' => '/admin/akun', 'icon' => 'bi-people'],
-        ['label' => 'Profil', 'url' => '/admin/profil', 'icon' => 'bi-person'],
+        'UTAMA' => [
+            ['label' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'bi-speedometer2'],
+        ],
+        'SISTEM' => [
+            ['label' => 'Kelola Akun', 'url' => '/admin/akun', 'icon' => 'bi-people'],
+        ],
+        'AKUN' => [
+            ['label' => 'Profil', 'url' => '/admin/profil', 'icon' => 'bi-person'],
+        ]
     ],
     'staf' => [
-        ['label' => 'Dashboard', 'url' => '/staff/dashboard', 'icon' => 'bi-speedometer2'],
-        ['label' => 'Profil', 'url' => '/staff/profil', 'icon' => 'bi-person'],
-        ['label' => 'Surat Masuk', 'url' => '/staff/surat', 'icon' => 'bi-envelope'],
-        ['label' => 'Galeri', 'url' => '/staff/galeri', 'icon' => 'bi-images'],
-        ['label' => 'Berita', 'url' => '/staff/berita', 'icon' => 'bi-newspaper'],
-        ['label' => 'Project', 'url' => '/staff/projects', 'icon' => 'bi-folder'],
-        ['label' => 'Perangkat Desa', 'url' => '/staff/perangkat-desa', 'icon' => 'bi-people'],
-        ['label' => 'Profil Desa', 'url' => '/staff/desa', 'icon' => 'bi-building'],
-        ['label' => 'Notifikasi', 'url' => '/staff/notifikasi', 'icon' => 'bi-bell'],
+        'UTAMA' => [
+            ['label' => 'Dashboard', 'url' => '/staff/dashboard', 'icon' => 'bi-speedometer2'],
+        ],
+        'LAYANAN' => [
+            ['label' => 'Surat Masuk', 'url' => '/staff/surat', 'icon' => 'bi-envelope'],
+        ],
+        'KONTEN' => [
+            ['label' => 'Project', 'url' => '/staff/projects', 'icon' => 'bi-folder'],
+            ['label' => 'Galeri', 'url' => '/staff/galeri', 'icon' => 'bi-images'],
+            ['label' => 'Berita', 'url' => '/staff/berita', 'icon' => 'bi-newspaper'],
+        ],
+        'DATA' => [
+            ['label' => 'Perangkat Desa', 'url' => '/staff/perangkat-desa', 'icon' => 'bi-people'],
+            ['label' => 'Profil Desa', 'url' => '/staff/desa', 'icon' => 'bi-building'],
+        ],
+        'AKUN' => [
+            ['label' => 'Profil', 'url' => '/staff/profil', 'icon' => 'bi-person'],
+            ['label' => 'Notifikasi', 'url' => '/staff/notifikasi', 'icon' => 'bi-bell'],
+        ]
     ],
     'user' => [
-        ['label' => 'Dashboard', 'url' => '/user/dashboard', 'icon' => 'bi-speedometer2'],
-        ['label' => 'Surat', 'url' => '/user/surat', 'icon' => 'bi-envelope'],
-        ['label' => 'Notifikasi', 'url' => '/user/notifikasi', 'icon' => 'bi-bell'],
-        ['label' => 'Profil', 'url' => '/user/profil', 'icon' => 'bi-person'],
+        'UTAMA' => [
+            ['label' => 'Dashboard', 'url' => '/user/dashboard', 'icon' => 'bi-speedometer2'],
+        ],
+        'LAYANAN' => [
+            ['label' => 'Surat', 'url' => '/user/surat', 'icon' => 'bi-envelope'],
+        ],
+        'AKUN' => [
+            ['label' => 'Profil', 'url' => '/user/profil', 'icon' => 'bi-person'],
+            ['label' => 'Notifikasi', 'url' => '/user/notifikasi', 'icon' => 'bi-bell'],
+        ]
     ],
     default => []
 };
@@ -46,17 +68,25 @@ $brandName = match($role) {
     </div>
     <div class="sidebar-divider"></div>
     <nav class="sidebar-nav">
-        <?php foreach ($menus as $menu): ?>
-            <?php
-            $menuUrl = base_url($menu['url']);
-            // Check if current URL matches menu URL
-            $isActive = (strpos($currentUrl, $menu['url']) !== false) || 
-                       (strpos($currentUrl, $menuUrl) !== false);
-            ?>
-            <a href="<?= esc($menuUrl) ?>" class="sidebar-item <?= $isActive ? 'active' : '' ?>">
-                <i class="<?= esc($menu['icon']) ?>"></i>
-                <span><?= esc($menu['label']) ?></span>
-            </a>
+        <?php $firstCategory = true; ?>
+        <?php foreach ($menus as $category => $items): ?>
+            <?php if (!$firstCategory): ?>
+                <div class="sidebar-category-divider"></div>
+            <?php endif; ?>
+            <div class="sidebar-category-label"><?= esc($category) ?></div>
+            <?php foreach ($items as $menu): ?>
+                <?php
+                $menuUrl = base_url($menu['url']);
+                // Check if current URL matches menu URL
+                $isActive = (strpos($currentUrl, $menu['url']) !== false) || 
+                           (strpos($currentUrl, $menuUrl) !== false);
+                ?>
+                <a href="<?= esc($menuUrl) ?>" class="sidebar-item <?= $isActive ? 'active' : '' ?>">
+                    <i class="<?= esc($menu['icon']) ?>"></i>
+                    <span><?= esc($menu['label']) ?></span>
+                </a>
+            <?php endforeach; ?>
+            <?php $firstCategory = false; ?>
         <?php endforeach; ?>
     </nav>
     <div class="sidebar-footer">

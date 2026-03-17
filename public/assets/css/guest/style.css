@@ -34,7 +34,7 @@ body {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  pointer-events: none;
+  poPoppins-events: none;
 }
 
 .hero-particles::before,
@@ -92,7 +92,7 @@ body {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  pointer-events: none;
+  poPoppins-events: none;
   z-index: 1;
 }
 
@@ -707,7 +707,7 @@ body {
   background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px);
   background-size: 24px 24px;
   position: relative;
-  /* Interactive Parallax Background */
+  /* Poppinsactive Parallax Background */
   background-position: calc(var(--mouse-x, 0px) / -20) calc(var(--mouse-y, 0px) / -20);
   transition: background-position 0.1s linear;
 }
@@ -721,7 +721,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
+  poPoppins-events: none;
   z-index: 1;
   background: radial-gradient(
     600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
@@ -1102,7 +1102,7 @@ body {
   width: 100%;
   height: 100%;
   z-index: 0;
-  pointer-events: none;
+  poPoppins-events: none;
   overflow: hidden;
 }
 
@@ -1348,7 +1348,7 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  pointer-events: none;
+  poPoppins-events: none;
   z-index: 0;
 }
 
@@ -1736,7 +1736,7 @@ body {
   z-index: 0;
   mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
-  pointer-events: none;
+  poPoppins-events: none;
 }
 
 /* =========================================
@@ -1990,6 +1990,8 @@ p, .section-description, .glass-desc, .news-excerpt {
   box-shadow: 0 4px 6px rgba(0,0,0,0.2) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+
 
 
 

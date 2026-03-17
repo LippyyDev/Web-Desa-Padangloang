@@ -38,7 +38,7 @@ body {
     width: 100vw;
     height: 100vh;
     z-index: 0;
-    pointer-events: none;
+    poPoppins-events: none;
 }
 
 /* Glassmorphism Card */
@@ -296,7 +296,7 @@ body {
     top: 50%;
     right: 1rem;
     transform: translateY(-50%);
-    cursor: pointer;
+    cursor: poPoppins;
     color: #64748b;
     z-index: 5;
     background: transparent;
@@ -315,3 +315,6 @@ body {
 .password-toggle:focus {
     outline: none;
 }
+
+
+
