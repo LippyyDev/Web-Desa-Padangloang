@@ -23,6 +23,21 @@ class DashboardController extends ProtectedController
         $projectModel = new ProjectModel();
         $albumModel   = new GalleryAlbumModel();
 
+        // Grafik akun terdaftar 6 bulan terakhir
+        $chartLabels = [];
+        $chartAccounts = [];
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $monthStart = date('Y-m-01', strtotime("-$i months"));
+            $monthEnd = date('Y-m-t 23:59:59', strtotime("-$i months"));
+            $chartLabels[] = date('M Y', strtotime("-$i months"));
+            
+            $chartAccounts[] = (new UserModel())
+                ->where('created_at >=', $monthStart . ' 00:00:00')
+                ->where('created_at <=', $monthEnd)
+                ->countAllResults(false);
+        }
+
         return view('Admin/dashboard', [
             'userCount'    => $userModel->countAllResults(),
             'letterCount'  => $letterModel->countAllResults(),
@@ -30,6 +45,8 @@ class DashboardController extends ProtectedController
             'projectCount' => $projectModel->countAllResults(),
             'albumCount'   => $albumModel->countAllResults(),
             'recentAccounts' => $userModel->orderBy('created_at', 'DESC')->limit(5)->find(),
+            'chartLabels'   => $chartLabels,
+            'chartAccounts' => $chartAccounts,
         ]);
     }
 }

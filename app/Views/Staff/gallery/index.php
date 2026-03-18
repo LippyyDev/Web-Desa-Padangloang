@@ -2,14 +2,16 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4>Galeri Desa</h4>
-        <div class="text-muted small">Kelola album foto / video.</div>
-    </div>
-    <div class="page-header-actions">
+    <div class="d-flex align-items-center gap-3">
         <div class="page-header-icon">
             <i class="bi bi-images"></i>
         </div>
+        <div>
+            <h4 class="mb-0">Galeri Desa</h4>
+            <div class="text-muted small mt-1">Kelola album foto / video.</div>
+        </div>
+    </div>
+    <div class="page-header-actions">
         <a href="<?= base_url('/staff/galeri/tambah') ?>" class="page-header-icon page-header-icon-add" title="Tambah Album">
             <i class="bi bi-plus-circle"></i>
         </a>

@@ -36,19 +36,19 @@ class LetterController extends ProtectedController
         $db = \Config\Database::connect();
         
         // Get DataTables parameters
-        $draw = $this->request->getGet('draw') ?? 1;
-        $start = $this->request->getGet('start') ?? 0;
-        $length = $this->request->getGet('length') ?? 10;
-        $search = $this->request->getGet('search')['value'] ?? '';
-        $searchCustom = $this->request->getGet('search_custom') ?? '';
-        $orderColumn = $this->request->getGet('order')[0]['column'] ?? 3;
-        $orderDir = $this->request->getGet('order')[0]['dir'] ?? 'desc';
+        $draw = $this->request->getPost('draw') ?? 1;
+        $start = $this->request->getPost('start') ?? 0;
+        $length = $this->request->getPost('length') ?? 10;
+        $search = $this->request->getPost('search')['value'] ?? '';
+        $searchCustom = $this->request->getPost('search_custom') ?? '';
+        $orderColumn = $this->request->getPost('order')[0]['column'] ?? 3;
+        $orderDir = $this->request->getPost('order')[0]['dir'] ?? 'desc';
         
         // Get filter parameters
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
-        $tipeSuratFilter = $this->request->getGet('tipe_surat_filter') ?? '';
-        $statusFilter = $this->request->getGet('status_filter') ?? '';
+        $dateStart = $this->request->getPost('date_start') ?? '';
+        $dateEnd = $this->request->getPost('date_end') ?? '';
+        $tipeSuratFilter = $this->request->getPost('tipe_surat_filter') ?? '';
+        $statusFilter = $this->request->getPost('status_filter') ?? '';
         
         // Use search_custom if provided, otherwise use default search
         $searchValue = !empty($searchCustom) ? $searchCustom : $search;
@@ -120,7 +120,8 @@ class LetterController extends ProtectedController
             'draw' => intval($draw),
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'data' => $data,
+            csrf_token() => csrf_hash()
         ]);
     }
 

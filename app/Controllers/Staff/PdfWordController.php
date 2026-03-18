@@ -1372,7 +1372,7 @@ private function generateUndangan($section, $tanggalSekarang)
      */
     public function downloadTemplate($tipe)
     {
-        if ($redirect = $this->guard(['staf'])) {
+        if ($redirect = $this->guard(['staf', 'user', 'admin'])) {
             return $redirect;
         }
 

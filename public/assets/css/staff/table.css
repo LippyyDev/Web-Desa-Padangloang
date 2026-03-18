@@ -1,4 +1,4 @@
-﻿/* =========================================
+/* =========================================
    TABLE - Table, DataTables, Scrollbar
    ========================================= */
 
@@ -49,7 +49,7 @@
 .table thead th {
   background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
   font-weight: 600;
-  color: #2563eb;
+  color: #2563eb !important;
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.5px;

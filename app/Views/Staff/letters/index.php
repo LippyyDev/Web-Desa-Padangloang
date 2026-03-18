@@ -2,45 +2,49 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4>Surat Masuk</h4>
-        <div class="text-muted small">Kelola surat dari warga.</div>
-    </div>
-    <div class="page-header-icon">
-        <i class="bi bi-envelope"></i>
+    <div class="d-flex align-items-center gap-3">
+        <div class="page-header-icon">
+            <i class="bi bi-envelope"></i>
+        </div>
+        <div>
+            <h4 class="mb-0">Surat Masuk</h4>
+            <div class="text-muted small mt-1">Kelola surat dari warga.</div>
+        </div>
     </div>
 </div>
 
 <!-- Template Section -->
 <div class="card mb-4">
-    <div class="card-body">
-        <div class="mb-3 template-header">
-            <h4 class="template-title">Template Surat</h4>
-            <div class="text-muted small template-description">Download template surat untuk diisi manual</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <div class="fw-semibold">Template Surat</div>
+            <div class="small text-muted">Download template surat untuk diisi manual</div>
         </div>
+    </div>
+    <div class="card-body">
         <div class="row g-2 g-md-3 template-buttons">
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-usaha') ?>" class="btn btn-outline-success w-100 template-btn">
+                <a href="<?= base_url('/staff/surat/template/keterangan-usaha') ?>" class="btn btn-success w-100 template-btn">
                     <i class="bi bi-download"></i> <span>KET USAHA</span>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-tidak-mampu') ?>" class="btn btn-outline-warning w-100 template-btn">
+                <a href="<?= base_url('/staff/surat/template/keterangan-tidak-mampu') ?>" class="btn btn-warning w-100 template-btn">
                     <i class="bi bi-download"></i> <span>KET TIDAK MAMPU</span>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-belum-menikah') ?>" class="btn btn-outline-danger w-100 template-btn">
+                <a href="<?= base_url('/staff/surat/template/keterangan-belum-menikah') ?>" class="btn btn-danger w-100 template-btn">
                     <i class="bi bi-download"></i> <span>KET BELUM MENIKAH</span>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-domisili') ?>" class="btn btn-outline-info w-100 template-btn">
+                <a href="<?= base_url('/staff/surat/template/keterangan-domisili') ?>" class="btn btn-info w-100 template-btn">
                     <i class="bi bi-download"></i> <span>KET DOMISILI</span>
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/undangan') ?>" class="btn btn-outline-primary w-100 template-btn">
+                <a href="<?= base_url('/staff/surat/template/undangan') ?>" class="btn btn-primary w-100 template-btn">
                     <i class="bi bi-download"></i> <span>UNDANGAN</span>
                 </a>
             </div>
@@ -143,6 +147,9 @@
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
+let csrfToken = '<?= csrf_token() ?>';
+let csrfHash = '<?= csrf_hash() ?>';
+
 let currentPage = 1;
 let itemsPerPage = 10;
 let totalRecords = 0;
@@ -157,7 +164,7 @@ $(document).ready(function() {
 function getStatusBadge(status) {
     const statusClass = {
         'Menunggu': 'bg-warning',
-        'Dibaca': 'bg-info',
+        'Dibaca': 'bg-primary',
         'Diterima': 'bg-success',
         'Ditolak': 'bg-danger'
     };
@@ -180,8 +187,9 @@ function loadCards(page = 1) {
     
     $.ajax({
         url: '<?= base_url('/staff/surat/api') ?>',
-        type: 'GET',
+        type: 'POST',
         data: {
+            [csrfToken]: csrfHash,
             draw: page,
             start: start,
             length: itemsPerPage,
@@ -193,6 +201,7 @@ function loadCards(page = 1) {
             search_custom: search
         },
         success: function(response) {
+            csrfHash = response[csrfToken];
             container.empty();
             
             if (!response.data || response.data.length === 0) {
@@ -335,9 +344,13 @@ $(document).ready(function() {
         serverSide: true,
         ajax: {
             url: '<?= base_url('/staff/surat/api') ?>',
-            type: 'GET',
-            dataSrc: 'data',
+            type: 'POST',
+            dataSrc: function(json) {
+                csrfHash = json[csrfToken];
+                return json.data;
+            },
             data: function(d) {
+                d[csrfToken] = csrfHash;
                 d.date_start = $('#filterDateStart').val();
                 d.date_end = $('#filterDateEnd').val();
                 d.tipe_surat_filter = $('#filterTipeSurat').val();
@@ -352,7 +365,8 @@ $(document).ready(function() {
             },
             { 
                 data: 'judul_perihal',
-                className: 'fw-semibold'
+                className: 'fw-semibold',
+                visible: false
             },
             { 
                 data: 'tipe_surat'
@@ -368,7 +382,8 @@ $(document).ready(function() {
             },
             { 
                 data: 'sent_at',
-                className: 'small text-muted'
+                className: 'small text-muted',
+                visible: false
             },
             { 
                 data: 'id',

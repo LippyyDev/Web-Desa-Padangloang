@@ -2,13 +2,15 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4>Tambah Project</h4>
-        <div class="text-muted small">Isi detail project pembangunan.</div>
+    <div class="d-flex align-items-center gap-3">
+        <a href="<?= base_url('/staff/projects') ?>" class="page-header-icon">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h4 class="mb-0">Tambah Project</h4>
+            <div class="text-muted small mt-1">Isi detail project pembangunan.</div>
+        </div>
     </div>
-    <a href="<?= base_url('/staff/projects') ?>" class="page-header-icon">
-        <i class="bi bi-arrow-left"></i>
-    </a>
 </div>
 
 <div class="card">

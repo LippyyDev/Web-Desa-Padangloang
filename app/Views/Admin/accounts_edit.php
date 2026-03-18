@@ -2,16 +2,18 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4>Edit Akun</h4>
-        <div class="text-muted small">Perbarui data pengguna.</div>
+    <div class="d-flex align-items-center gap-3">
+        <a href="<?= base_url('/admin/akun') ?>" class="page-header-icon">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h4 class="mb-0">Edit Akun</h4>
+            <div class="text-muted small mt-1">Perbarui data pengguna.</div>
+        </div>
     </div>
     <div class="page-header-actions">
         <a href="<?= base_url('/admin/akun/' . $user['id'] . '/hapus') ?>" class="page-header-icon page-header-icon-delete" title="Hapus Akun">
             <i class="bi bi-trash"></i>
-        </a>
-        <a href="<?= base_url('/admin/akun') ?>" class="page-header-icon">
-            <i class="bi bi-arrow-left"></i>
         </a>
     </div>
 </div>

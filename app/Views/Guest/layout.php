@@ -217,17 +217,19 @@ function getIcon(type) {
     }
     
     function processEmailQueue() {
-        // Use fetch with keepalive to ensure request completes even if page unloads
-        fetch('<?= base_url('/api/email-queue/process') ?>', {
-            method: 'GET',
-            keepalive: true,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        }).catch(function(err) {
-            // Silently fail - email will be processed on next request
-            console.debug('Email queue processing failed (non-critical):', err);
-        });
+        // Delay 5 detik agar tidak bersaing dengan AJAX DataTables/konten utama
+        setTimeout(function() {
+            fetch('<?= base_url('/api/email-queue/process') ?>', {
+                method: 'GET',
+                keepalive: true,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).catch(function(err) {
+                // Silently fail - email will be processed on next request
+                console.debug('Email queue processing failed (non-critical):', err);
+            });
+        }, 5000);
     }
 })();
 </script>

@@ -2,13 +2,15 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4>Tambah Album</h4>
-        <div class="text-muted small">Isi detail album dan media.</div>
+    <div class="d-flex align-items-center gap-3">
+        <a href="<?= base_url('/staff/galeri') ?>" class="page-header-icon">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h4 class="mb-0">Tambah Album</h4>
+            <div class="text-muted small mt-1">Isi detail album dan media.</div>
+        </div>
     </div>
-    <a href="<?= base_url('/staff/galeri') ?>" class="page-header-icon">
-        <i class="bi bi-arrow-left"></i>
-    </a>
 </div>
 
 <div class="card">

@@ -1,4 +1,4 @@
-﻿/* =========================================
+/* =========================================
    BASE - Font, Body, Global Reset
    ========================================= */
 
@@ -9,7 +9,10 @@ body {
   font-weight: 400;
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  background-image: radial-gradient(rgba(226, 232, 240, 0.8) 1px, transparent 1px),
+    radial-gradient(rgba(226, 232, 240, 0.8) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
 }
 
 * {

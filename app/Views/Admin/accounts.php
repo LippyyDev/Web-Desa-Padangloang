@@ -2,14 +2,16 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4>Kelola Akun</h4>
-        <div class="text-muted small">Buat dan atur role akun.</div>
-    </div>
-    <div class="page-header-actions">
+    <div class="d-flex align-items-center gap-3">
         <div class="page-header-icon">
             <i class="bi bi-people"></i>
         </div>
+        <div>
+            <h4 class="mb-0">Kelola Akun</h4>
+            <div class="text-muted small mt-1">Buat dan atur role akun.</div>
+        </div>
+    </div>
+    <div class="page-header-actions">
         <a href="<?= base_url('/admin/akun/tambah') ?>" class="page-header-icon page-header-icon-add" title="Tambah Akun">
             <i class="bi bi-plus-circle"></i>
         </a>

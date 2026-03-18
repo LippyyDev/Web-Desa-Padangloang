@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="<?= base_url('assets/css/components/sidebar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/components/topbar.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/user/template.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/user/style.css') ?>">
 </head>
 <body class="bg-light">
@@ -97,19 +98,20 @@ document.addEventListener('click', async function(e) {
     }
     
     function processEmailQueue() {
-        fetch('<?= base_url('/api/email-queue/process') ?>', {
-            method: 'GET',
-            keepalive: true,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        }).catch(function(err) {
-            // Email queue processing failed (non-critical)
-        });
+        // Delay 5 detik agar tidak bersaing dengan AJAX DataTables/konten utama
+        setTimeout(function() {
+            fetch('<?= base_url('/api/email-queue/process') ?>', {
+                method: 'GET',
+                keepalive: true,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).catch(function(err) {
+                // Email queue processing failed (non-critical)
+            });
+        }, 5000);
     }
 })();
 </script>
 </body>
 </html>
-
-

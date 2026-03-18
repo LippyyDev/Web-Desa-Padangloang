@@ -1,4 +1,4 @@
-﻿/* =========================================
+/* =========================================
    BUTTONS - Btn variants, sizes
    (Staff memiliki lebih banyak variant daripada User)
    ========================================= */
@@ -14,25 +14,7 @@
   overflow: hidden;
 }
 
-.btn::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition:
-    width 0.6s,
-    height 0.6s;
-}
 
-.btn:hover::before {
-  width: 300px;
-  height: 300px;
-}
 
 .btn-primary {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -139,6 +121,45 @@
   box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
   transform: translateY(-2px);
   color: #212529;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #198754 0%, #145c37 100%);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+  color: #ffffff;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #145c37 0%, #104a2c 100%);
+  box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+  transform: translateY(-2px);
+  color: #ffffff;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+  transform: translateY(-2px);
+  color: #ffffff;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+  box-shadow: 0 4px 12px rgba(13, 202, 240, 0.3);
+  color: #ffffff;
+}
+
+.btn-info:hover {
+  background: linear-gradient(135deg, #0aa2c0 0%, #098ca3 100%);
+  box-shadow: 0 6px 20px rgba(13, 202, 240, 0.4);
+  transform: translateY(-2px);
+  color: #ffffff;
 }
 
 .btn-sm {

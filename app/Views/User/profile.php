@@ -2,12 +2,14 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4>Profil Saya</h4>
-        <div class="text-muted small">Perbarui informasi data diri Anda.</div>
-    </div>
-    <div class="page-header-icon">
-        <i class="bi bi-person"></i>
+    <div class="d-flex align-items-center gap-3">
+        <div class="page-header-icon">
+            <i class="bi bi-person"></i>
+        </div>
+        <div>
+            <h4 class="mb-0">Profil Saya</h4>
+            <div class="text-muted small mt-1">Perbarui informasi data diri Anda.</div>
+        </div>
     </div>
 </div>
 

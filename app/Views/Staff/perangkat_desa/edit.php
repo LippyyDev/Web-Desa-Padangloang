@@ -2,16 +2,18 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4>Edit Perangkat Desa</h4>
-    <div class="text-muted small">Ubah data perangkat desa.</div>
+    <div class="d-flex align-items-center gap-3">
+        <a href="<?= base_url('/staff/perangkat-desa') ?>" class="page-header-icon">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h4 class="mb-0">Edit Perangkat Desa</h4>
+            <div class="text-muted small mt-1">Ubah data perangkat desa.</div>
+        </div>
     </div>
     <div class="page-header-actions">
         <a href="<?= base_url('/staff/perangkat-desa/' . $item['id'] . '/hapus') ?>" class="page-header-icon page-header-icon-delete" title="Hapus Perangkat Desa">
             <i class="bi bi-trash"></i>
-        </a>
-        <a href="<?= base_url('/staff/perangkat-desa') ?>" class="page-header-icon">
-            <i class="bi bi-arrow-left"></i>
         </a>
     </div>
 </div>

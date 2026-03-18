@@ -2,28 +2,63 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4><?= esc($letter['judul_perihal']) ?></h4>
-        <div class="text-muted small">Status: <span class="badge bg-<?php 
-            if ($letter['status'] === 'Diterima') echo 'success';
-            elseif ($letter['status'] === 'Ditolak') echo 'danger';
-            elseif ($letter['status'] === 'Dibaca') echo 'info';
-            else echo 'warning';
-        ?>"><?= esc($letter['status']) ?></span></div>
-    </div>
-    <div class="page-header-actions">
-
+    <div class="d-flex align-items-center gap-3">
         <a href="<?= base_url('/staff/surat') ?>" class="page-header-icon">
             <i class="bi bi-arrow-left"></i>
         </a>
+        <div>
+            <h4 class="mb-0">Detail Surat</h4>
+            <div class="text-muted small mt-1">Status: <span class="fw-semibold text-<?php 
+            if ($letter['status'] === 'Diterima') echo 'success';
+            elseif ($letter['status'] === 'Ditolak') echo 'danger';
+            elseif ($letter['status'] === 'Dibaca') echo 'primary';
+            else echo 'warning';
+        ?>"><?= esc($letter['status']) ?></span></div>
+        </div>
+    </div>
+    <div class="page-header-actions">
+        
     </div>
 </div>
 <div class="card mb-3">
     <div class="card-body">
-        <div class="small text-muted mb-2">Tipe Surat</div>
-        <div class="fw-semibold mb-3"><?= esc($letter['tipe_surat']) ?></div>
+        <div class="row mb-3">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="small text-muted mb-2">Pengirim</div>
+                <div class="fw-semibold"><?= esc($user['nama_lengkap'] ?? 'User tidak diketahui') ?></div>
+            </div>
+            <div class="col-md-6">
+                <div class="small text-muted mb-2">Waktu Pengiriman</div>
+                <div class="fw-semibold"><?= date('d M Y H:i', strtotime($letter['created_at'])) ?></div>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="small text-muted mb-2">Kode Unik</div>
+                <div class="fw-semibold"><?= esc($letter['kode_unik']) ?></div>
+            </div>
+            <div class="col-md-6">
+                <div class="small text-muted mb-2">Tipe Surat</div>
+                <div class="fw-semibold"><?= esc($letter['tipe_surat']) ?></div>
+            </div>
+        </div>
+        
+        <div class="small text-muted mb-2">Perihal</div>
+        <div class="text-muted mb-3"><?= esc($letter['judul_perihal']) ?></div>
+
         <div class="small text-muted mb-2">Isi Surat</div>
         <div class="text-muted"><?= nl2br($letter['isi_surat']) ?></div>
+
+        <div class="small text-muted mt-3 mb-2">Status Surat</div>
+        <div>
+            <span class="badge bg-<?php 
+                if ($letter['status'] === 'Diterima') echo 'success';
+                elseif ($letter['status'] === 'Ditolak') echo 'danger';
+                elseif ($letter['status'] === 'Dibaca') echo 'primary';
+                else echo 'warning';
+            ?>"><?= esc($letter['status']) ?></span>
+        </div>
         <?php if (!empty($attachments)): ?>
             <div class="mt-3">
                 <div class="small text-muted mb-2">Lampiran</div>
@@ -38,9 +73,9 @@
                         elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) $icon = 'bi-file-earmark-image-fill text-info';
                         ?>
                         <li class="mb-1">
-                            <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="text-decoration-none text-dark">
-                                <i class="bi <?= $icon ?>"></i>
-                                <?= esc($att['original_name'] ?: basename($att['file_path'])) ?>
+                            <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                                <i class="bi <?= $icon ?> flex-shrink-0"></i>
+                                <span class="attachment-filename"><?= esc($att['original_name'] ?: basename($att['file_path'])) ?></span>
                             </a>
                         </li>
                     <?php endforeach; ?>
@@ -165,9 +200,9 @@
                                         elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) $icon = 'bi-file-earmark-image-fill text-info';
                                         ?>
                                         <li class="mb-1">
-                                            <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="text-decoration-none text-dark">
-                                                <i class="bi <?= $icon ?>"></i>
-                                                <?= esc($att['original_name'] ?: 'lampiran') ?>
+                                            <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                                                <i class="bi <?= $icon ?> flex-shrink-0"></i>
+                                                <span class="attachment-filename"><?= esc($att['original_name'] ?: 'lampiran') ?></span>
                                             </a>
                                         </li>
                                     <?php endforeach; ?>

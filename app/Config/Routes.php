@@ -44,7 +44,7 @@ $routes->group('user', static function ($routes) {
     $routes->post('profil/ubah-password', 'User\ProfileController::changePassword');
 
     $routes->get('surat', 'User\LetterController::index');
-    $routes->get('surat/api', 'User\LetterController::api');
+    $routes->post('surat/api', 'User\LetterController::api');
     $routes->get('surat/buat', 'User\LetterController::create');
     $routes->post('surat', 'User\LetterController::store');
     $routes->get('surat/(:num)', 'User\LetterController::show/$1');
@@ -55,6 +55,7 @@ $routes->group('user', static function ($routes) {
     $routes->get('surat/(:num)/pdf', 'User\PdfWordController::generatePDF/$1');
     $routes->post('surat/preview/word', 'User\PdfWordController::previewWord');
     $routes->post('surat/preview/pdf', 'User\PdfWordController::previewPDF');
+    $routes->get('surat/template/(:segment)', 'Staff\PdfWordController::downloadTemplate/$1');
 
     $routes->get('notifikasi', 'User\NotificationController::index');
     $routes->get('notifikasi/(:num)/read', 'User\NotificationController::markRead/$1');
@@ -67,7 +68,7 @@ $routes->group('staff', static function ($routes) {
     $routes->post('profil/ubah-password', 'Staff\ProfileController::changePassword');
 
     $routes->get('surat', 'Staff\LetterController::index');
-    $routes->get('surat/api', 'Staff\LetterController::api');
+    $routes->post('surat/api', 'Staff\LetterController::api');
     $routes->get('surat/(:num)', 'Staff\LetterController::show/$1');
     $routes->get('surat/(:num)/hapus', 'Staff\LetterController::delete/$1');
     $routes->post('surat/(:num)/balas', 'Staff\LetterController::reply/$1');

@@ -2,12 +2,14 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4>Profil Admin</h4>
-        <div class="text-muted small">Perbarui identitas admin.</div>
-    </div>
-    <div class="page-header-icon">
-        <i class="bi bi-person"></i>
+    <div class="d-flex align-items-center gap-3">
+        <div class="page-header-icon">
+            <i class="bi bi-person"></i>
+        </div>
+        <div>
+            <h4 class="mb-0">Profil Admin</h4>
+            <div class="text-muted small mt-1">Perbarui identitas admin.</div>
+        </div>
     </div>
 </div>
 

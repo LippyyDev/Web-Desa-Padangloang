@@ -1,6 +1,18 @@
-﻿/* =========================================
+/* =========================================
    RESPONSIVE - Media queries untuk semua breakpoint
    ========================================= */
+
+/* =========================================
+   Letter Title Truncation (Riwayat Surat)
+   Desktop: max ~50 karakter | Mobile: max ~20 karakter
+   ========================================= */
+.letter-title {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 400px;
+}
 
 /* Responsive Styles */
 @media (max-width: 1400px) {
@@ -144,6 +156,21 @@
   .template-buttons .template-btn span {
     font-size: 0.7rem;
     word-break: break-word;
+  }
+
+  /* Truncate judul surat di riwayat surat - mobile lebih sempit */
+  .letter-title {
+    max-width: 160px;
+  }
+
+  /* Truncate long attachment filenames on mobile */
+  .attachment-filename {
+    display: inline-block;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
   }
 }
 

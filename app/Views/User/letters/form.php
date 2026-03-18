@@ -2,20 +2,27 @@
 
 <?= $this->section('content') ?>
 <div class="page-header">
-    <div>
-        <h4><?= isset($letter) ? 'Edit Surat' : 'Buat Surat Baru' ?></h4>
-        <div class="text-muted small">Lengkapi detail surat yang akan dikirim ke staf desa.</div>
+    <div class="d-flex align-items-center gap-3">
+        <a href="<?= base_url('/user/surat') ?>" class="page-header-icon">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h4 class="mb-0"><?= isset($letter) ? 'Edit Surat' : 'Buat Surat Baru' ?></h4>
+            <div class="text-muted small mt-1">Lengkapi detail surat yang akan dikirim ke staf desa.</div>
+        </div>
     </div>
-    <a href="<?= base_url('/user/surat') ?>" class="page-header-icon">
-        <i class="bi bi-arrow-left"></i>
-    </a>
 </div>
 
 <?php if (!isset($letter)): // Hanya tampilkan section export untuk mode create ?>
 <div class="page-header mb-4">
-    <div>
-        <h4>Hasilkan Berkas Surat</h4>
-        <div class="text-muted small">Dapatkan dokumen Word atau PDF yang sudah sesuai dengan tipe surat dan isi surat yang Anda buat.</div>
+    <div class="d-flex align-items-center gap-3">
+        <div class="page-header-icon" style="background: #e0e7ff; color: #4f46e5;">
+            <i class="bi bi-file-text"></i>
+        </div>
+        <div>
+            <h4 class="mb-0">Hasilkan Berkas Surat</h4>
+            <div class="text-muted small mt-1">Dapatkan dokumen Word atau PDF yang sudah sesuai dengan tipe surat dan isi surat yang Anda buat.</div>
+        </div>
     </div>
     <div class="page-header-actions">
         <button type="button" class="page-header-icon page-header-icon-add" id="btnExportWord" title="Hasilkan Word">
