@@ -35,12 +35,12 @@
                     <label class="form-label">Deskripsi</label>
                     <textarea class="form-control" name="deskripsi" rows="2"></textarea>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                     <label class="form-label">Upload Foto</label>
                     <input type="file" class="form-control" id="mediaInput" name="media[]" multiple accept="image/jpeg,image/jpg,image/png,image/webp">
                     <div id="mediaPreview" class="row g-2 mt-2"></div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                     <label class="form-label">Link Video</label>
                     <div id="video-list"></div>
                     <button type="button" class="btn btn-outline-primary btn-sm" id="add-video">Tambah Link</button>
@@ -152,10 +152,10 @@
         const addBtn = document.getElementById('add-video');
         const addField = (value = '') => {
             const group = document.createElement('div');
-            group.className = 'input-group mb-2 video-item';
+            group.className = 'd-flex gap-2 mb-2 video-item';
             group.innerHTML = `
                 <input type="text" class="form-control" name="video_links[]" placeholder="https://youtube.com/..." value="${value}">
-                <button type="button" class="btn btn-outline-danger">Hapus</button>
+                <button type="button" class="btn btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
             `;
             group.querySelector('button').addEventListener('click', () => group.remove());
             list.appendChild(group);

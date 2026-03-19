@@ -77,9 +77,9 @@
                     <label class="form-label">NIK</label>
                     <input type="text" class="form-control" name="nik" value="<?= old('nik', $profile['nik'] ?? '') ?>">
                 </div>
-                <div class="col-12">
+                <div class="col-md-8">
                     <label class="form-label">Alamat</label>
-                    <textarea class="form-control" name="alamat" rows="3"><?= old('alamat', $profile['alamat'] ?? '') ?></textarea>
+                    <textarea class="form-control" name="alamat" rows="1"><?= old('alamat', $profile['alamat'] ?? '') ?></textarea>
                 </div>
             </div>
             <div class="mt-4">

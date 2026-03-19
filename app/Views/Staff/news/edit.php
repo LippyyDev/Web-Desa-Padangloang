@@ -43,12 +43,12 @@
                     </div>
                     <textarea name="isi" style="display: none;"><?= esc($item['isi']) ?></textarea>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                     <label class="form-label">Tambah Foto</label>
                     <input type="file" class="form-control" id="mediaInput" name="media[]" multiple accept="image/jpeg,image/jpg,image/png,image/webp">
                     <div id="mediaPreview" class="row g-2 mt-2"></div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                     <label class="form-label">Link Video</label>
                     <div id="video-list"></div>
                     <button type="button" class="btn btn-outline-primary btn-sm" id="add-video">Tambah Link</button>
@@ -60,11 +60,17 @@
                 </button>
             </div>
         </form>
+    </div>
+</div>
 
-        <?php if (!empty($media)): ?>
-            <div class="mt-4">
-                <div class="fw-semibold mb-2">Media Saat Ini</div>
-                <div class="row g-2">
+<?php if (!empty($media)): ?>
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="fw-semibold mb-3 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
+            <i class="bi bi-images" style="font-size: 1rem;"></i>
+            Media Saat Ini
+        </div>
+        <div class="row g-2">
                     <?php foreach ($media as $m): ?>
                         <div class="col-md-3">
                         <div class="border rounded p-2 text-center position-relative" style="overflow: visible;">
@@ -80,10 +86,9 @@
                         </div>
                     <?php endforeach; ?>
                 </div>
-            </div>
-        <?php endif; ?>
     </div>
 </div>
+<?php endif; ?>
 <!-- Quill Editor CSS -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <style>
@@ -243,10 +248,10 @@
         const addBtn = document.getElementById('add-video');
         const addField = (value = '') => {
             const group = document.createElement('div');
-            group.className = 'input-group mb-2 video-item';
+            group.className = 'd-flex gap-2 mb-2 video-item';
             group.innerHTML = `
                 <input type="text" class="form-control" name="video_links[]" placeholder="https://youtube.com/..." value="${value}">
-                <button type="button" class="btn btn-outline-danger">Hapus</button>
+                <button type="button" class="btn btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
             `;
             group.querySelector('button').addEventListener('click', () => group.remove());
             list.appendChild(group);
