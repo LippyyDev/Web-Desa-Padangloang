@@ -163,6 +163,15 @@ class LetterController extends ProtectedController
             return redirect()->back()->withInput()->with('error', 'Jenis surat tidak valid.');
         }
 
+        $validationRules = [
+            'judul_perihal' => 'required|max_length[150]',
+            'isi_surat'     => 'required|max_length[3000]',
+        ];
+
+        if (!$this->validate($validationRules)) {
+            return redirect()->back()->withInput()->with('error', 'Karakter Judul/Perihal atau Isi Surat melebihi batas maksimal yang diizinkan (Judul: 150, Isi: 3000).');
+        }
+
         $letterModel = new LetterModel();
         
         // Generate kode unik
@@ -306,6 +315,15 @@ class LetterController extends ProtectedController
         $tipeSurat = $this->request->getPost('tipe_surat');
         if (!in_array($tipeSurat, $allowedTypes)) {
             return redirect()->back()->withInput()->with('error', 'Jenis surat tidak valid.');
+        }
+
+        $validationRules = [
+            'judul_perihal' => 'required|max_length[150]',
+            'isi_surat'     => 'required|max_length[3000]',
+        ];
+
+        if (!$this->validate($validationRules)) {
+            return redirect()->back()->withInput()->with('error', 'Karakter Judul/Perihal atau Isi Surat melebihi batas maksimal yang diizinkan (Judul: 150, Isi: 3000).');
         }
 
         $letterModel = new LetterModel();

@@ -41,7 +41,7 @@
             <?= csrf_field() ?>
             <div class="mb-3">
                 <label class="form-label">Judul / Perihal</label>
-                <input type="text" class="form-control" name="judul_perihal" value="<?= set_value('judul_perihal', $letter['judul_perihal'] ?? '') ?>" required>
+                <input type="text" class="form-control" name="judul_perihal" value="<?= set_value('judul_perihal', $letter['judul_perihal'] ?? '') ?>" required maxlength="150" placeholder="Maksimal 150 karakter">
             </div>
             <div class="mb-3">
                 <label class="form-label">Jenis / Tipe Surat</label>
@@ -57,7 +57,7 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Isi Surat</label>
-                <textarea class="form-control" name="isi_surat" rows="6" required><?= set_value('isi_surat', $letter['isi_surat'] ?? '') ?></textarea>
+                <textarea class="form-control" name="isi_surat" rows="6" required maxlength="3000" placeholder="Ketikkan isi surat Anda secara jelas... (Maksimal 3000 karakter)"><?= set_value('isi_surat', $letter['isi_surat'] ?? '') ?></textarea>
             </div>
             <div class="mb-3">
                 <label class="form-label">Lampiran</label>

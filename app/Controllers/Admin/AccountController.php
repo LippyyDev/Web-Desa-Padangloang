@@ -150,6 +150,15 @@ class AccountController extends ProtectedController
             return redirect()->back()->withInput()->with('warning', 'Email sudah digunakan oleh pengguna lain.');
         }
 
+        // Validasi input fields
+        if (!$this->validate([
+            'username' => 'required|max_length[50]',
+            'email'    => 'required|valid_email|max_length[100]',
+        ])) {
+            $errors = implode(' ', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('error', $errors);
+        }
+
         $userId = $userModel->insert([
             'username'      => $this->request->getPost('username'),
             'email'         => $this->request->getPost('email'),
@@ -192,6 +201,29 @@ class AccountController extends ProtectedController
             return redirect()->back()->withInput()->with('warning', 'Email sudah digunakan oleh pengguna lain.');
         }
 
+        // Validasi input fields
+        $validationRules = [
+            'username'  => 'permit_empty|max_length[50]',
+            'email'     => 'permit_empty|valid_email|max_length[100]',
+            'agama'     => 'permit_empty|max_length[50]|regex_match[/^[a-zA-Z\s]*$/]',
+            'pekerjaan' => 'permit_empty|max_length[100]|regex_match[/^[a-zA-Z\s]*$/]',
+            'nik'       => 'permit_empty|exact_length[16]|regex_match[/^[0-9]+$/]',
+        ];
+
+        $validationMessages = [
+            'agama'     => ['regex_match' => 'Agama hanya boleh berisi huruf.'],
+            'pekerjaan' => ['regex_match' => 'Pekerjaan hanya boleh berisi huruf.'],
+            'nik'       => [
+                'exact_length' => 'NIK harus tepat 16 digit.',
+                'regex_match'  => 'NIK hanya boleh berisi angka.',
+            ],
+        ];
+
+        if (!$this->validate($validationRules, $validationMessages)) {
+            $errors = implode(' ', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('error', $errors);
+        }
+
         // Update user data
         $userData = [
             'username' => $newUsername,
@@ -221,6 +253,10 @@ class AccountController extends ProtectedController
             $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
             if (!in_array($extension, $allowedExtensions)) {
                 return redirect()->back()->with('error', 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.');
+            }
+
+            if ($file->getSize() > 1048576) {
+                return redirect()->back()->with('error', 'Ukuran foto profil tidak boleh lebih dari 1 MB.');
             }
 
             $path = FCPATH . 'uploads/profile';

@@ -32,11 +32,11 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Username</label>
-                    <input type="text" class="form-control" name="username" value="<?= old('username', session('user.username')) ?>">
+                    <input type="text" class="form-control" name="username" value="<?= old('username', session('user.username')) ?>" maxlength="50" placeholder="Maksimal 50 karakter">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" name="email" value="<?= old('email', $user['email'] ?? '') ?>">
+                    <input type="email" class="form-control" name="email" value="<?= old('email', $user['email'] ?? '') ?>" maxlength="100">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Nama Lengkap</label>
@@ -67,15 +67,15 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Agama</label>
-                    <input type="text" class="form-control" name="agama" value="<?= old('agama', $profile['agama'] ?? '') ?>">
+                    <input type="text" class="form-control input-letters-only" name="agama" value="<?= old('agama', $profile['agama'] ?? '') ?>" maxlength="50" placeholder="Hanya huruf">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Pekerjaan</label>
-                    <input type="text" class="form-control" name="pekerjaan" value="<?= old('pekerjaan', $profile['pekerjaan'] ?? '') ?>">
+                    <input type="text" class="form-control input-letters-only" name="pekerjaan" value="<?= old('pekerjaan', $profile['pekerjaan'] ?? '') ?>" maxlength="100" placeholder="Hanya huruf">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">NIK</label>
-                    <input type="text" class="form-control" name="nik" value="<?= old('nik', $profile['nik'] ?? '') ?>">
+                    <input type="text" class="form-control input-digits-only" name="nik" value="<?= old('nik', $profile['nik'] ?? '') ?>" maxlength="16" minlength="16" inputmode="numeric" placeholder="16 digit angka">
                 </div>
                 <div class="col-md-8">
                     <label class="form-label">Alamat</label>
@@ -132,12 +132,37 @@ document.addEventListener('DOMContentLoaded', function() {
     fotoInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
+            if (file.size > 1048576) {
+                Swal.fire({ icon: 'error', title: 'File terlalu besar', text: 'Ukuran foto profil maksimal 1 MB.' });
+                this.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
                 photoPreview.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
+    });
+
+    // Hanya boleh huruf dan spasi untuk input agama & pekerjaan
+    document.querySelectorAll('.input-letters-only').forEach(function(el) {
+        el.addEventListener('input', function() {
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, '');
+        });
+        el.addEventListener('keypress', function(e) {
+            if (!/[a-zA-Z\s]/.test(e.key)) e.preventDefault();
+        });
+    });
+
+    // Hanya boleh angka untuk NIK, maksimal 16 digit
+    document.querySelectorAll('.input-digits-only').forEach(function(el) {
+        el.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 16);
+        });
+        el.addEventListener('keypress', function(e) {
+            if (!/[0-9]/.test(e.key)) e.preventDefault();
+        });
     });
 });
 </script>

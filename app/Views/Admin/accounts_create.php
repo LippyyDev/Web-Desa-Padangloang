@@ -24,11 +24,11 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Username</label>
-                    <input type="text" class="form-control" name="username" required>
+                    <input type="text" class="form-control" name="username" required maxlength="50" placeholder="Maksimal 50 karakter">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" name="email" required>
+                    <input type="email" class="form-control" name="email" required maxlength="100">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Password</label>
