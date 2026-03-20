@@ -346,7 +346,7 @@ class LetterController extends ProtectedController
         // Hapus lampiran surat
         $attachments = $attachmentModel->where('letter_id', $id)->findAll();
         foreach ($attachments as $att) {
-            $filePath = FCPATH . ltrim($att['file_path'], '/');
+            $filePath = WRITEPATH . 'uploads/letters/' . basename($att['file_path']);
             if (is_file($filePath)) {
                 @unlink($filePath);
             }
@@ -359,7 +359,7 @@ class LetterController extends ProtectedController
             // Hapus lampiran balasan
             $replyAttachments = $replyAttachModel->where('reply_id', $reply['id'])->findAll();
             foreach ($replyAttachments as $replyAtt) {
-                $filePath = FCPATH . ltrim($replyAtt['file_path'], '/');
+                $filePath = WRITEPATH . 'uploads/replies/' . basename($replyAtt['file_path']);
                 if (is_file($filePath)) {
                     @unlink($filePath);
                 }
@@ -384,20 +384,32 @@ class LetterController extends ProtectedController
             return;
         }
 
-        $uploadPath      = FCPATH . 'uploads/letters';
+        $uploadPath      = WRITEPATH . 'uploads/letters';
         $attachmentModel = new LetterAttachmentModel();
         $this->ensureUploadPath($uploadPath);
 
-        $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'webp'];
+        $allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp'];
+        
+        // Batasi maksimal 5 file
+        if (count($files) > 5) {
+            session()->setFlashdata('error', 'Maksimal lampiran yang diperbolehkan adalah 5 file. Beberapa file mungkin tidak tersimpan.');
+            $files = array_slice($files, 0, 5);
+        }
 
         foreach ($files as $file) {
             if (!$file->isValid()) {
                 continue;
             }
+            
+            // Batasi ukuran file 1MB
+            if ($file->getSize() > 1048576) {
+                session()->setFlashdata('error', 'Terdapat lampiran yang melebihi batas 1MB atau format tidak didukung dan gagal diunggah.');
+                continue;
+            }
 
             $ext = strtolower($file->getClientExtension());
             if (!in_array($ext, $allowedExtensions)) {
-                session()->setFlashdata('error', 'Salah satu lampiran memiliki format yang tidak didukung. Lampiran tersebut tidak disimpan.');
+                session()->setFlashdata('error', 'Terdapat lampiran yang melebihi batas 1MB atau format tidak didukung dan gagal diunggah.');
                 continue;
             }
 
@@ -406,7 +418,7 @@ class LetterController extends ProtectedController
 
             $attachmentModel->insert([
                 'letter_id'     => $letterId,
-                'file_path'     => 'uploads/letters/' . $newName,
+                'file_path'     => 'letters/' . $newName,
                 'original_name' => $file->getClientName(),
                 'mime_type'     => $file->getClientMimeType(),
                 'file_size'     => $file->getSize(),
@@ -432,6 +444,76 @@ class LetterController extends ProtectedController
         } while ($exists && $attempt < $maxAttempts);
 
         return $kodeUnik;
+    }
+
+    /**
+     * Serve lampiran surat secara aman (hanya user pemilik surat)
+     */
+    public function serveAttachment($id)
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $redirect;
+        }
+
+        $attachmentModel = new LetterAttachmentModel();
+        $letterModel     = new LetterModel();
+
+        $att = $attachmentModel->find($id);
+        if (!$att) {
+            return $this->response->setStatusCode(404);
+        }
+
+        // Pastikan lampiran ini milik surat user yang sedang login
+        $letter = $letterModel->find($att['letter_id']);
+        if (!$letter || $letter['user_id'] != $this->currentUser['id']) {
+            return $this->response->setStatusCode(403);
+        }
+
+        $filePath = WRITEPATH . 'uploads/letters/' . basename($att['file_path']);
+        if (!is_file($filePath)) {
+            return $this->response->setStatusCode(404);
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', $att['mime_type'])
+            ->setHeader('Content-Disposition', 'inline; filename="' . $att['original_name'] . '"')
+            ->setBody(file_get_contents($filePath));
+    }
+
+    /**
+     * Serve lampiran balasan surat secara aman (hanya user pemilik surat)
+     */
+    public function serveReplyAttachment($id)
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $redirect;
+        }
+
+        $replyAttachModel = new ReplyAttachmentModel();
+        $replyModel       = new LetterReplyModel();
+        $letterModel      = new LetterModel();
+
+        $att = $replyAttachModel->find($id);
+        if (!$att) {
+            return $this->response->setStatusCode(404);
+        }
+
+        // Pastikan lampiran balasan ini terhubung ke surat milik user
+        $reply  = $replyModel->find($att['reply_id']);
+        $letter = $reply ? $letterModel->find($reply['letter_id']) : null;
+        if (!$letter || $letter['user_id'] != $this->currentUser['id']) {
+            return $this->response->setStatusCode(403);
+        }
+
+        $filePath = WRITEPATH . 'uploads/replies/' . basename($att['file_path']);
+        if (!is_file($filePath)) {
+            return $this->response->setStatusCode(404);
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', $att['mime_type'])
+            ->setHeader('Content-Disposition', 'inline; filename="' . $att['original_name'] . '"')
+            ->setBody(file_get_contents($filePath));
     }
 }
 

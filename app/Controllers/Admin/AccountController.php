@@ -23,30 +23,33 @@ class AccountController extends ProtectedController
             return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(401);
         }
 
-        $userModel = new UserModel();
+        $userModel    = new UserModel();
         $profileModel = new UserProfileModel();
-        $db = \Config\Database::connect();
-        
+        $db           = \Config\Database::connect();
+        $csrfToken    = csrf_token();
+
         // Get DataTables parameters
-        $draw = $this->request->getGet('draw') ?? 1;
-        $start = $this->request->getGet('start') ?? 0;
-        $length = $this->request->getGet('length') ?? 10;
-        $search = $this->request->getGet('search')['value'] ?? '';
-        $orderColumn = $this->request->getGet('order')[0]['column'] ?? 5;
-        $orderDir = $this->request->getGet('order')[0]['dir'] ?? 'desc';
-        
+        $draw        = $this->request->getPost('draw') ?? 1;
+        $start       = $this->request->getPost('start') ?? 0;
+        $length      = $this->request->getPost('length') ?? 10;
+        $searchPost  = $this->request->getPost('search');
+        $search      = is_array($searchPost) ? ($searchPost['value'] ?? '') : ($searchPost ?? '');
+        $orderPost   = $this->request->getPost('order');
+        $orderColumn = is_array($orderPost) ? ($orderPost[0]['column'] ?? 5) : 5;
+        $orderDir    = is_array($orderPost) ? ($orderPost[0]['dir'] ?? 'desc') : 'desc';
+
         // Column mapping (Foto, Username, Email, Role, Status, Dibuat, Aksi)
         $columns = ['foto_profil', 'username', 'email', 'role', 'status', 'created_at'];
         $orderBy = $columns[$orderColumn] ?? 'created_at';
-        
+
         // Build base query with join
         $builder = $db->table('users u')
             ->select('u.*, up.nama_lengkap, up.foto_profil')
             ->join('user_profiles up', 'up.user_id = u.id', 'left');
-        
+
         // Get total records
         $recordsTotal = $builder->countAllResults(false);
-        
+
         // Apply search filter
         if (!empty($search)) {
             $builder->groupStart()
@@ -57,42 +60,43 @@ class AccountController extends ProtectedController
                 ->orLike('up.nama_lengkap', $search)
                 ->groupEnd();
         }
-        
+
         // Get filtered count
         $recordsFiltered = $builder->countAllResults(false);
-        
+
         // Apply ordering
         if ($orderBy === 'foto_profil') {
             $builder->orderBy('u.created_at', strtoupper($orderDir));
         } else {
             $builder->orderBy('u.' . $orderBy, strtoupper($orderDir));
         }
-        
+
         // Apply pagination
         $builder->limit($length, $start);
-        
+
         $users = $builder->get()->getResultArray();
-        
+
         // Format data
         $data = [];
         foreach ($users as $user) {
             $data[] = [
-                'id' => $user['id'],
-                'username' => esc($user['username']),
-                'email' => esc($user['email']),
-                'role' => esc($user['role']),
-                'status' => esc($user['status']),
-                'created_at' => date('d M Y', strtotime($user['created_at'])),
-                'nama_lengkap' => (!empty($user['nama_lengkap'])) ? esc($user['nama_lengkap']) : '-',
+                'id'          => $user['id'],
+                'username'    => esc($user['username']),
+                'email'       => esc($user['email']),
+                'role'        => esc($user['role']),
+                'status'      => esc($user['status']),
+                'created_at'  => date('d M Y', strtotime($user['created_at'])),
+                'nama_lengkap'=> (!empty($user['nama_lengkap'])) ? esc($user['nama_lengkap']) : '-',
                 'foto_profil' => (!empty($user['foto_profil'])) ? $user['foto_profil'] : null,
             ];
         }
 
         return $this->response->setJSON([
-            'draw' => intval($draw),
-            'recordsTotal' => $recordsTotal,
+            $csrfToken        => csrf_hash(),
+            'draw'            => intval($draw),
+            'recordsTotal'    => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'data'            => $data,
         ]);
     }
 
@@ -134,6 +138,18 @@ class AccountController extends ProtectedController
         $userModel    = new UserModel();
         $profileModel = new UserProfileModel();
 
+        // Validasi duplikat
+        $newUsername = trim($this->request->getPost('username'));
+        $newEmail    = trim($this->request->getPost('email'));
+
+        if ($userModel->where('username', $newUsername)->first()) {
+            return redirect()->back()->withInput()->with('warning', 'Username sudah digunakan oleh pengguna lain.');
+        }
+
+        if ($userModel->where('email', $newEmail)->first()) {
+            return redirect()->back()->withInput()->with('warning', 'Email sudah digunakan oleh pengguna lain.');
+        }
+
         $userId = $userModel->insert([
             'username'      => $this->request->getPost('username'),
             'email'         => $this->request->getPost('email'),
@@ -164,10 +180,22 @@ class AccountController extends ProtectedController
             return redirect()->back()->with('error', 'User tidak ditemukan.');
         }
 
+        // Validasi duplikat
+        $newUsername = trim($this->request->getPost('username')) ?: $user['username'];
+        $newEmail    = trim($this->request->getPost('email')) ?: $user['email'];
+
+        if ($userModel->where('id !=', $id)->where('username', $newUsername)->first()) {
+            return redirect()->back()->withInput()->with('warning', 'Username sudah digunakan oleh pengguna lain.');
+        }
+
+        if ($userModel->where('id !=', $id)->where('email', $newEmail)->first()) {
+            return redirect()->back()->withInput()->with('warning', 'Email sudah digunakan oleh pengguna lain.');
+        }
+
         // Update user data
         $userData = [
-            'username' => $this->request->getPost('username') ?: $user['username'],
-            'email'    => $this->request->getPost('email') ?: $user['email'],
+            'username' => $newUsername,
+            'email'    => $newEmail,
             'role'     => $this->request->getPost('role') ?: $user['role'],
             'status'   => $this->request->getPost('status') ?: $user['status'],
         ];

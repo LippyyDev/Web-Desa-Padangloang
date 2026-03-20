@@ -83,6 +83,9 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
+let csrfToken = '<?= csrf_token() ?>';
+let csrfHash  = '<?= csrf_hash() ?>';
+
 $(document).ready(function() {
     let currentPage = 1;
     let isLoading = false;
@@ -92,7 +95,7 @@ $(document).ready(function() {
 
     function loadProjects(page, search = '', itemsPerPage = limit) {
         if (isLoading) return;
-        
+
         isLoading = true;
         $('#loadingIndicator').show();
         $('#projectsContainer').empty();
@@ -100,13 +103,14 @@ $(document).ready(function() {
         $('#emptyMessage').hide();
 
         const dateStart = $('#filterDateStart').val();
-        const dateEnd = $('#filterDateEnd').val();
-        const status = $('#filterStatus').val();
+        const dateEnd   = $('#filterDateEnd').val();
+        const status    = $('#filterStatus').val();
 
         $.ajax({
             url: '<?= base_url('/staff/projects/api') ?>',
-            type: 'GET',
+            type: 'POST',
             data: {
+                [csrfToken]: csrfHash,
                 page: page,
                 limit: itemsPerPage,
                 search: search,
@@ -115,12 +119,17 @@ $(document).ready(function() {
                 status_filter: status
             },
             success: function(response) {
+                // Refresh CSRF token dari response
+                if (response[csrfToken]) {
+                    csrfHash = response[csrfToken];
+                }
+
                 if (response.data && response.data.length > 0) {
                     let html = '';
                     response.data.forEach(function(project) {
                         const anggaran = parseInt(project.anggaran) || 0;
                         const formattedAnggaran = 'Rp' + anggaran.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                        
+
                         html += '<div class="col-md-6 col-lg-4 col-xl-3">' +
                             '<div class="card h-100 gallery-card">' +
                             '<img src="' + project.thumbnail + '" ' +
@@ -143,15 +152,14 @@ $(document).ready(function() {
                             '</div>';
                     });
                     $('#projectsContainer').html(html);
-                    
-                    currentPage = page;
-                    totalPages = response.total_pages;
+
+                    currentPage   = page;
+                    totalPages    = response.total_pages;
                     currentSearch = search;
-                    limit = itemsPerPage;
-                    
-                    // Generate pagination
+                    limit         = itemsPerPage;
+
                     renderPagination();
-                    
+
                     if (totalPages > 1) {
                         $('#customPagination').show();
                     }
@@ -159,7 +167,7 @@ $(document).ready(function() {
                     $('#emptyMessage').show();
                     $('#customPagination').hide();
                 }
-                
+
                 isLoading = false;
                 $('#loadingIndicator').hide();
             },
@@ -179,14 +187,14 @@ $(document).ready(function() {
     function renderPagination() {
         const pagination = $('#customPagination');
         pagination.empty();
-        
+
         if (totalPages <= 1) {
             pagination.hide();
             return;
         }
-        
+
         let paginationHTML = '<div class="pagination-wrapper">';
-        
+
         // Previous button
         if (currentPage > 1) {
             paginationHTML += `<button class="pagination-btn" data-page="${currentPage - 1}">
@@ -197,16 +205,15 @@ $(document).ready(function() {
                 <i class="bi bi-chevron-left"></i>
             </button>`;
         }
-        
+
         // Page numbers (max 3 buttons)
         let startPage = Math.max(1, currentPage - 1);
-        let endPage = Math.min(totalPages, startPage + 2);
-        
-        // Adjust if we're near the end
+        let endPage   = Math.min(totalPages, startPage + 2);
+
         if (endPage - startPage < 2) {
             startPage = Math.max(1, endPage - 2);
         }
-        
+
         for (let i = startPage; i <= endPage; i++) {
             if (i === currentPage) {
                 paginationHTML += `<button class="pagination-btn active">${i}</button>`;
@@ -214,7 +221,7 @@ $(document).ready(function() {
                 paginationHTML += `<button class="pagination-btn" data-page="${i}">${i}</button>`;
             }
         }
-        
+
         // Next button
         if (currentPage < totalPages) {
             paginationHTML += `<button class="pagination-btn" data-page="${currentPage + 1}">
@@ -225,7 +232,7 @@ $(document).ready(function() {
                 <i class="bi bi-chevron-right"></i>
             </button>`;
         }
-        
+
         paginationHTML += '</div>';
         pagination.html(paginationHTML);
     }
@@ -250,7 +257,7 @@ $(document).ready(function() {
         const search = $('#searchInput').val().trim();
         currentSearch = search;
         loadProjects(1, search, limit);
-        
+
         if (search) {
             $('#clearSearchBtn').show();
             $('.project-search-container .input-group').addClass('has-clear-btn');
@@ -291,7 +298,7 @@ $(document).ready(function() {
             loadProjects(1, currentSearch, limit);
         }, 300);
     }
-    
+
     // Auto filter on change
     $('#filterDateStart, #filterDateEnd, #filterStatus').on('change', function() {
         applyFilter();
@@ -302,6 +309,3 @@ $(document).ready(function() {
 });
 </script>
 <?= $this->endSection() ?>
-
-
-

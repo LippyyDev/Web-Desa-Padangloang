@@ -35,6 +35,20 @@ class ProfileController extends ProtectedController
         $userModel    = new UserModel();
         $uid          = $this->currentUser['id'];
 
+        // Validasi duplikat username dan email (kecuali milik user sendiri)
+        $newUsername = trim($this->request->getPost('username'));
+        $newEmail    = trim($this->request->getPost('email'));
+
+        $duplicateUsername = $userModel->where('id !=', $uid)->where('username', $newUsername)->first();
+        if ($duplicateUsername) {
+            return redirect()->to('/user/profil')->with('warning', 'Username sudah digunakan oleh pengguna lain.');
+        }
+
+        $duplicateEmail = $userModel->where('id !=', $uid)->where('email', $newEmail)->first();
+        if ($duplicateEmail) {
+            return redirect()->to('/user/profil')->with('warning', 'Email sudah digunakan oleh pengguna lain.');
+        }
+
         $nik = trim($this->request->getPost('nik') ?? '');
         
         $data = [
@@ -96,20 +110,6 @@ class ProfileController extends ProtectedController
         } else {
             $data['user_id'] = $uid;
             $profileModel->insert($data);
-        }
-
-        // Validasi duplikat username dan email (kecuali milik user sendiri)
-        $newUsername = trim($this->request->getPost('username'));
-        $newEmail    = trim($this->request->getPost('email'));
-
-        $duplicateUsername = $userModel->where('id !=', $uid)->where('username', $newUsername)->first();
-        if ($duplicateUsername) {
-            return redirect()->to('/user/profil')->with('error', 'Username "' . esc($newUsername) . '" sudah digunakan oleh pengguna lain.');
-        }
-
-        $duplicateEmail = $userModel->where('id !=', $uid)->where('email', $newEmail)->first();
-        if ($duplicateEmail) {
-            return redirect()->to('/user/profil')->with('error', 'Email "' . esc($newEmail) . '" sudah digunakan oleh pengguna lain.');
         }
 
         $userModel->update($uid, [

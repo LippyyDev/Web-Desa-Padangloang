@@ -54,6 +54,9 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
+let csrfToken = '<?= csrf_token() ?>';
+let csrfHash  = '<?= csrf_hash() ?>';
+
 $(document).ready(function() {
     let currentPage = 1;
     let isLoading = false;
@@ -63,7 +66,7 @@ $(document).ready(function() {
 
     function loadData(page, search = '') {
         if (isLoading) return;
-        
+
         isLoading = true;
         $('#loadingIndicator').show();
         $('#perangkatContainer').empty();
@@ -72,13 +75,19 @@ $(document).ready(function() {
 
         $.ajax({
             url: '<?= base_url('/staff/perangkat-desa/api') ?>',
-            type: 'GET',
+            type: 'POST',
             data: {
+                [csrfToken]: csrfHash,
                 page: page,
                 limit: limit,
                 search: search
             },
             success: function(response) {
+                // Refresh CSRF token dari response
+                if (response[csrfToken]) {
+                    csrfHash = response[csrfToken];
+                }
+
                 if (response.data && response.data.length > 0) {
                     let html = '';
                     response.data.forEach(function(item) {
@@ -103,14 +112,13 @@ $(document).ready(function() {
                             '</div>';
                     });
                     $('#perangkatContainer').html(html);
-                    
-                    currentPage = page;
-                    totalPages = response.total_pages;
+
+                    currentPage   = page;
+                    totalPages    = response.total_pages;
                     currentSearch = search;
-                    
-                    // Generate pagination
+
                     generatePagination(page, totalPages);
-                    
+
                     if (totalPages > 1) {
                         $('#paginationContainer').show();
                     }
@@ -118,7 +126,7 @@ $(document).ready(function() {
                     $('#emptyMessage').show();
                     $('#paginationContainer').hide();
                 }
-                
+
                 isLoading = false;
                 $('#loadingIndicator').hide();
             },
@@ -144,8 +152,8 @@ $(document).ready(function() {
         let html = '';
         const maxVisible = 5;
         let startPage = Math.max(1, current - Math.floor(maxVisible / 2));
-        let endPage = Math.min(total, startPage + maxVisible - 1);
-        
+        let endPage   = Math.min(total, startPage + maxVisible - 1);
+
         if (endPage - startPage < maxVisible - 1) {
             startPage = Math.max(1, endPage - maxVisible + 1);
         }
@@ -202,7 +210,7 @@ $(document).ready(function() {
         const search = $('#searchInput').val().trim();
         currentSearch = search;
         loadData(1, search);
-        
+
         if (search) {
             $('#clearSearchBtn').show();
             $('.perangkat-search-container .input-group').addClass('has-clear-btn');
@@ -233,5 +241,3 @@ $(document).ready(function() {
 });
 </script>
 <?= $this->endSection() ?>
-
-

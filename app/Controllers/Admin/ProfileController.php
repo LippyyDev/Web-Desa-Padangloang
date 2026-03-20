@@ -34,6 +34,20 @@ class ProfileController extends ProtectedController
         $userModel    = new UserModel();
         $uid          = $this->currentUser['id'];
 
+        // Validasi duplikat username dan email (kecuali milik admin sendiri)
+        $newUsername = trim($this->request->getPost('username'));
+        $newEmail    = trim($this->request->getPost('email'));
+
+        $duplicateUsername = $userModel->where('id !=', $uid)->where('username', $newUsername)->first();
+        if ($duplicateUsername) {
+            return redirect()->to('/admin/profil')->with('warning', 'Username sudah digunakan oleh pengguna lain.');
+        }
+
+        $duplicateEmail = $userModel->where('id !=', $uid)->where('email', $newEmail)->first();
+        if ($duplicateEmail) {
+            return redirect()->to('/admin/profil')->with('warning', 'Email sudah digunakan oleh pengguna lain.');
+        }
+
         $nik = trim($this->request->getPost('nik') ?? '');
         
         $data = [
@@ -98,8 +112,8 @@ class ProfileController extends ProtectedController
         }
 
         $userModel->update($uid, [
-            'username' => $this->request->getPost('username'),
-            'email' => $this->request->getPost('email'),
+            'username' => $newUsername,
+            'email'    => $newEmail,
         ]);
 
         return redirect()->to('/admin/profil')->with('success', 'Profil diperbarui.');

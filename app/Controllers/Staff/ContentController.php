@@ -86,13 +86,14 @@ class ContentController extends ProtectedController
         }
 
         $albumModel = new GalleryAlbumModel();
-        
-        $page = (int)($this->request->getGet('page') ?? 1);
-        $limit = (int)($this->request->getGet('limit') ?? 12);
-        $search = $this->request->getGet('search') ?? '';
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
-        $offset = ($page - 1) * $limit;
+        $csrfToken  = csrf_token();
+
+        $page      = (int)($this->request->getPost('page') ?? 1);
+        $limit     = (int)($this->request->getPost('limit') ?? 12);
+        $search    = $this->request->getPost('search') ?? '';
+        $dateStart = $this->request->getPost('date_start') ?? '';
+        $dateEnd   = $this->request->getPost('date_end') ?? '';
+        $offset    = ($page - 1) * $limit;
 
         // Apply date filter
         if (!empty($dateStart)) {
@@ -112,10 +113,10 @@ class ContentController extends ProtectedController
 
         // Get total count with filters
         $total = $albumModel->countAllResults(false);
-        
+
         // Reset and apply filters again for data fetch
         $albumModel = new GalleryAlbumModel();
-        
+
         // Apply date filter again
         if (!empty($dateStart)) {
             $albumModel->where('DATE(tanggal_waktu) >=', $dateStart);
@@ -123,7 +124,7 @@ class ContentController extends ProtectedController
         if (!empty($dateEnd)) {
             $albumModel->where('DATE(tanggal_waktu) <=', $dateEnd);
         }
-        
+
         // Apply search filter again
         if (!empty($search)) {
             $albumModel->groupStart()
@@ -138,21 +139,22 @@ class ContentController extends ProtectedController
         $data = [];
         foreach ($albums as $album) {
             $data[] = [
-                'id' => $album['id'],
-                'nama_album' => esc($album['nama_album']),
-                'deskripsi' => esc($album['deskripsi'] ?? ''),
+                'id'            => $album['id'],
+                'nama_album'    => esc($album['nama_album']),
+                'deskripsi'     => esc($album['deskripsi'] ?? ''),
                 'tanggal_waktu' => date('d M Y', strtotime($album['tanggal_waktu'])),
-                'thumbnail' => $album['thumbnail'] ? base_url($album['thumbnail']) : 'https://via.placeholder.com/600x360?text=Album',
+                'thumbnail'     => $album['thumbnail'] ? base_url($album['thumbnail']) : 'https://via.placeholder.com/600x360?text=Album',
             ];
         }
 
         return $this->response->setJSON([
-            'data' => $data,
-            'total' => $total,
-            'page' => $page,
-            'limit' => $limit,
+            $csrfToken    => csrf_hash(),
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'limit'       => $limit,
             'total_pages' => ceil($total / $limit),
-            'search' => $search,
+            'search'      => $search,
         ]);
     }
 
@@ -476,13 +478,14 @@ class ContentController extends ProtectedController
         }
 
         $newsModel = new NewsModel();
-        
-        $page = (int)($this->request->getGet('page') ?? 1);
-        $limit = (int)($this->request->getGet('limit') ?? 12);
-        $search = $this->request->getGet('search') ?? '';
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
-        $offset = ($page - 1) * $limit;
+        $csrfToken = csrf_token();
+
+        $page      = (int)($this->request->getPost('page') ?? 1);
+        $limit     = (int)($this->request->getPost('limit') ?? 12);
+        $search    = $this->request->getPost('search') ?? '';
+        $dateStart = $this->request->getPost('date_start') ?? '';
+        $dateEnd   = $this->request->getPost('date_end') ?? '';
+        $offset    = ($page - 1) * $limit;
 
         // Apply date filter
         if (!empty($dateStart)) {
@@ -502,10 +505,10 @@ class ContentController extends ProtectedController
 
         // Get total count with filters
         $total = $newsModel->countAllResults(false);
-        
+
         // Reset and apply filters again for data fetch
         $newsModel = new NewsModel();
-        
+
         // Apply date filter again
         if (!empty($dateStart)) {
             $newsModel->where('DATE(tanggal_waktu) >=', $dateStart);
@@ -513,7 +516,7 @@ class ContentController extends ProtectedController
         if (!empty($dateEnd)) {
             $newsModel->where('DATE(tanggal_waktu) <=', $dateEnd);
         }
-        
+
         // Apply search filter again
         if (!empty($search)) {
             $newsModel->groupStart()
@@ -528,21 +531,22 @@ class ContentController extends ProtectedController
         $data = [];
         foreach ($news as $item) {
             $data[] = [
-                'id' => $item['id'],
-                'judul' => esc($item['judul']),
-                'isi' => strip_tags($item['isi']),
+                'id'            => $item['id'],
+                'judul'         => esc($item['judul']),
+                'isi'           => strip_tags($item['isi']),
                 'tanggal_waktu' => date('d M Y', strtotime($item['tanggal_waktu'])),
-                'thumbnail' => $item['thumbnail'] ? base_url($item['thumbnail']) : 'https://via.placeholder.com/600x360?text=Berita',
+                'thumbnail'     => $item['thumbnail'] ? base_url($item['thumbnail']) : 'https://via.placeholder.com/600x360?text=Berita',
             ];
         }
 
         return $this->response->setJSON([
-            'data' => $data,
-            'total' => $total,
-            'page' => $page,
-            'limit' => $limit,
+            $csrfToken    => csrf_hash(),
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'limit'       => $limit,
             'total_pages' => ceil($total / $limit),
-            'search' => $search,
+            'search'      => $search,
         ]);
     }
 
@@ -766,14 +770,15 @@ class ContentController extends ProtectedController
         }
 
         $projectModel = new ProjectModel();
-        
-        $page = (int)($this->request->getGet('page') ?? 1);
-        $limit = (int)($this->request->getGet('limit') ?? 12);
-        $search = $this->request->getGet('search') ?? '';
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
-        $statusFilter = $this->request->getGet('status_filter') ?? '';
-        $offset = ($page - 1) * $limit;
+        $csrfToken    = csrf_token();
+
+        $page         = (int)($this->request->getPost('page') ?? 1);
+        $limit        = (int)($this->request->getPost('limit') ?? 12);
+        $search       = $this->request->getPost('search') ?? '';
+        $dateStart    = $this->request->getPost('date_start') ?? '';
+        $dateEnd      = $this->request->getPost('date_end') ?? '';
+        $statusFilter = $this->request->getPost('status_filter') ?? '';
+        $offset       = ($page - 1) * $limit;
 
         // Apply date filter
         if (!empty($dateStart)) {
@@ -799,10 +804,10 @@ class ContentController extends ProtectedController
 
         // Get total count with filters
         $total = $projectModel->countAllResults(false);
-        
+
         // Reset and apply filters again for data fetch
         $projectModel = new ProjectModel();
-        
+
         // Apply date filter again
         if (!empty($dateStart)) {
             $projectModel->where('DATE(tanggal_waktu) >=', $dateStart);
@@ -810,12 +815,12 @@ class ContentController extends ProtectedController
         if (!empty($dateEnd)) {
             $projectModel->where('DATE(tanggal_waktu) <=', $dateEnd);
         }
-        
+
         // Apply status filter again
         if (!empty($statusFilter)) {
             $projectModel->where('status', $statusFilter);
         }
-        
+
         // Apply search filter again
         if (!empty($search)) {
             $projectModel->groupStart()
@@ -831,23 +836,24 @@ class ContentController extends ProtectedController
         $data = [];
         foreach ($projects as $project) {
             $data[] = [
-                'id' => $project['id'],
-                'judul' => esc($project['judul']),
-                'deskripsi' => strip_tags($project['deskripsi'] ?? ''),
-                'status' => esc($project['status']),
-                'anggaran' => $project['anggaran'] ?? 0,
+                'id'            => $project['id'],
+                'judul'         => esc($project['judul']),
+                'deskripsi'     => strip_tags($project['deskripsi'] ?? ''),
+                'status'        => esc($project['status']),
+                'anggaran'      => $project['anggaran'] ?? 0,
                 'tanggal_waktu' => date('d M Y', strtotime($project['tanggal_waktu'])),
-                'thumbnail' => $project['thumbnail'] ? base_url($project['thumbnail']) : 'https://via.placeholder.com/600x360?text=Project',
+                'thumbnail'     => $project['thumbnail'] ? base_url($project['thumbnail']) : 'https://via.placeholder.com/600x360?text=Project',
             ];
         }
 
         return $this->response->setJSON([
-            'data' => $data,
-            'total' => $total,
-            'page' => $page,
-            'limit' => $limit,
+            $csrfToken    => csrf_hash(),
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'limit'       => $limit,
             'total_pages' => ceil($total / $limit),
-            'search' => $search,
+            'search'      => $search,
         ]);
     }
 
@@ -1109,11 +1115,12 @@ class ContentController extends ProtectedController
             return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(401);
         }
 
-        $model = new PerangkatDesaModel();
-        
-        $page = (int)($this->request->getGet('page') ?? 1);
-        $limit = (int)($this->request->getGet('limit') ?? 12);
-        $search = $this->request->getGet('search') ?? '';
+        $model     = new PerangkatDesaModel();
+        $csrfToken = csrf_token();
+
+        $page   = (int)($this->request->getPost('page') ?? 1);
+        $limit  = (int)($this->request->getPost('limit') ?? 12);
+        $search = $this->request->getPost('search') ?? '';
         $offset = ($page - 1) * $limit;
 
         // Apply search filter
@@ -1127,7 +1134,7 @@ class ContentController extends ProtectedController
 
         // Get total count with search
         $total = $model->countAllResults(false);
-        
+
         // Reset and apply search again for data fetch
         $model = new PerangkatDesaModel();
         if (!empty($search)) {
@@ -1149,9 +1156,10 @@ class ContentController extends ProtectedController
         $totalPages = ceil($total / $limit);
 
         return $this->response->setJSON([
-            'data' => $data,
-            'total' => $total,
-            'total_pages' => $totalPages,
+            $csrfToken     => csrf_hash(),
+            'data'         => $data,
+            'total'        => $total,
+            'total_pages'  => $totalPages,
             'current_page' => $page,
         ]);
     }

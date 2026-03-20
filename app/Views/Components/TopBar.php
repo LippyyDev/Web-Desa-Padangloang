@@ -18,7 +18,7 @@ $userPhoto = ($profile && !empty($profile['foto_profil']))
     ? base_url($profile['foto_profil']) 
     : base_url('assets/img/guest.webp');
 $notificationUrl = match($currentUser['role'] ?? '') {
-    'admin' => '#', // Admin belum punya route notifikasi
+    'admin' => base_url('/admin/notifikasi'),
     'staf' => base_url('/staff/notifikasi'),
     'user' => base_url('/user/notifikasi'),
     default => '#'

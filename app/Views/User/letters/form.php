@@ -60,9 +60,12 @@
                 <textarea class="form-control" name="isi_surat" rows="6" required><?= set_value('isi_surat', $letter['isi_surat'] ?? '') ?></textarea>
             </div>
             <div class="mb-3">
-                <label class="form-label">Lampiran (opsional, bisa lebih dari satu)</label>
-                <input type="file" class="form-control" name="attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp">
-                <div class="form-text">Dapat mengunggah lebih dari satu file. Maksimal ukuran per file 2MB. Format dokumen atau gambar (PDF, DOC/DOCX, XLS/XLSX, JPG/JPEG, PNG, WEBP).</div>
+                <label class="form-label">Lampiran</label>
+                <input type="file" id="fileInput" class="form-control" name="attachments[]" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp">
+                <div class="form-text">Dapat mengunggah maksimal 5 file. Maksimal ukuran per file 1MB.</div>
+                
+                <!-- Container untuk preview list file yang dipilih -->
+                <ol class="ps-3 mt-3 mb-0 d-none" id="fileListPreview"></ol>
             </div>
             <div class="mt-4">
                 <button class="btn btn-primary" type="submit">
@@ -72,6 +75,134 @@
         </form>
     </div>
 </div>
+
+<script>
+// Menyimpan original state
+let currentDataTransfer = new DataTransfer();
+
+// Escape HTML untuk mencegah XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Fungsi untuk me-render list file
+function renderFileList() {
+    const fileListPreview = document.getElementById('fileListPreview');
+    const fileInput = document.getElementById('fileInput');
+    
+    fileListPreview.innerHTML = '';
+    
+    if (currentDataTransfer.files.length === 0) {
+        fileListPreview.classList.add('d-none');
+        return;
+    }
+    
+    fileListPreview.classList.remove('d-none');
+    
+    Array.from(currentDataTransfer.files).forEach((file, index) => {
+        const ext = file.name.split('.').pop().toLowerCase();
+        let iconClass = 'bi-file-earmark';
+        
+        if (ext === 'pdf') iconClass = 'bi-file-earmark-pdf-fill text-danger';
+        else if (['doc', 'docx'].includes(ext)) iconClass = 'bi-file-earmark-word-fill text-primary';
+        else if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) iconClass = 'bi-file-earmark-image-fill text-info';
+        
+        const sizeMb = (file.size / 1024 / 1024).toFixed(2);
+        
+        const li = document.createElement('li');
+        li.className = 'mb-1';
+        li.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-decoration-none text-dark d-inline-flex align-items-center gap-1 flex-grow-1 text-truncate">
+                    <i class="bi ${iconClass} flex-shrink-0"></i>
+                    <span class="attachment-filename text-truncate">${escapeHtml(file.name)}</span>
+                    <span class="small text-muted flex-shrink-0 ms-1">(${sizeMb} MB)</span>
+                </span>
+                <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="removeFile(${index})" title="Hapus Lampiran">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        fileListPreview.appendChild(li);
+    });
+}
+
+// Fungsi global untuk menghapus file dari DataTransfer dan update Input
+window.removeFile = function(index) {
+    const dt = new DataTransfer();
+    const files = Array.from(currentDataTransfer.files);
+    
+    // Hapus file pada index terkait
+    files.splice(index, 1);
+    
+    // Masukkan kembali sisa file ke dt baru
+    files.forEach(file => dt.items.add(file));
+    
+    // Update data transfer utama dan input file
+    currentDataTransfer = dt;
+    document.getElementById('fileInput').files = currentDataTransfer.files;
+    
+    renderFileList();
+};
+
+// Event listener ganti file
+document.getElementById('fileInput')?.addEventListener('change', function(e) {
+    const newFiles = Array.from(e.target.files);
+    let tempDt = new DataTransfer();
+    
+    // Salin file yang sudah ada di list
+    Array.from(currentDataTransfer.files).forEach(file => {
+        tempDt.items.add(file);
+    });
+    
+    // Cek batas total file keseluruhan
+    if (tempDt.items.length + newFiles.length > 5) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Terlalu Banyak File',
+            text: 'Total lampiran maksimal hanya 5 file. Anda mencoba menyertakan ' + (tempDt.items.length + newFiles.length) + ' file.',
+            confirmButtonColor: '#0d6efd'
+        });
+        // Kembalikan input ke state lama
+        e.target.value = '';
+        e.target.files = currentDataTransfer.files;
+        return;
+    }
+    
+    // Validsi dan tambahkan file baru
+    for (let i = 0; i < newFiles.length; i++) {
+        if (newFiles[i].size > 1048576) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ukuran File Terlalu Besar',
+                text: 'Ukuran file "' + newFiles[i].name + '" (' + (newFiles[i].size / 1024 / 1024).toFixed(2) + 'MB) terlalu besar. Maksimal 1MB per file.',
+                confirmButtonColor: '#0d6efd'
+            });
+            e.target.value = '';
+            e.target.files = currentDataTransfer.files;
+            return;
+        }
+        
+        // Mencegah duplicate file yang sama persis
+        const isDuplicate = Array.from(tempDt.files).some(existingFile => 
+            existingFile.name === newFiles[i].name && existingFile.size === newFiles[i].size
+        );
+        
+        if (!isDuplicate) {
+            tempDt.items.add(newFiles[i]);
+        }
+    }
+    
+    // Jika lolos validasi, komit state baru
+    currentDataTransfer = tempDt;
+    e.target.value = ''; // Reset value supaya elemen input merespon event change jika memilih file yang persis sama nantinya
+    e.target.files = currentDataTransfer.files;
+    
+    renderFileList();
+});
+</script>
 
 <?php if (!isset($letter)): // JavaScript hanya untuk mode create ?>
 <script>

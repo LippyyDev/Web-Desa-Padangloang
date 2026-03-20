@@ -1,4 +1,4 @@
-<?= $this->extend('Staff/layout') ?>
+<?= $this->extend('Admin/layout') ?>
 
 <?= $this->section('content') ?>
 <div class="page-header">
@@ -8,7 +8,7 @@
         </div>
         <div>
             <h4 class="mb-0">Notifikasi</h4>
-            <div class="text-muted small mt-1">Info terbaru terkait surat.</div>
+            <div class="text-muted small mt-1">Daftar akun baru yang terdaftar di sistem.</div>
         </div>
     </div>
 </div>
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function loadNotifications() {
-    fetch('<?= base_url('/staff/notifikasi/api') ?>', {
+    fetch('<?= base_url('/admin/notifikasi/api') ?>', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -54,8 +54,7 @@ function loadNotifications() {
 
         if (data.success && data.notifications.length > 0) {
             data.notifications.forEach(notif => {
-                const notifUrl = `<?= base_url('/staff/notifikasi') ?>/${notif.id}/read`;
-                const isRead = parseInt(notif.is_read) === 1;
+                const accountUrl = `<?= base_url('/admin/akun') ?>`;
                 
                 const dateObj = new Date(notif.created_at);
                 const day = String(dateObj.getDate()).padStart(2, '0');
@@ -65,24 +64,26 @@ function loadNotifications() {
                 const minutes = String(dateObj.getMinutes()).padStart(2, '0');
                 const dateStr = `${day} ${month} ${year} ${hours}:${minutes} WITA`;
                 
+
+
                 const html = `
-                    <a href="${notifUrl}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start ${!isRead ? 'bg-light' : ''}">
+                    <a href="${accountUrl}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="fw-semibold ${!isRead ? 'text-primary' : 'text-dark'}">
-                                ${escapeHtml(notif.title)}
+                            <div class="fw-semibold text-primary">
+                                Pendaftaran Akun Baru: ${escapeHtml(notif.username)}
                             </div>
-                            <div class="small text-muted mt-1">${escapeHtml(notif.message)}</div>
+                            <div class="small text-muted mt-1">Email: ${escapeHtml(notif.email)} | Status: ${escapeHtml(notif.status)}</div>
                         </div>
                         <div class="text-end">
                             <div class="small text-muted">${dateStr}</div>
-                            ${!isRead ? '<span class="badge bg-primary rounded-pill mt-2">Baru</span>' : ''}
+                            <span class="badge bg-primary rounded-pill mt-2">Akun Baru</span>
                         </div>
                     </a>
                 `;
                 container.insertAdjacentHTML('beforeend', html);
             });
         } else {
-            container.innerHTML = '<div class="list-group-item text-muted small text-center py-4">Belum ada notifikasi.</div>';
+            container.innerHTML = '<div class="list-group-item text-muted small text-center py-4">Belum ada pendaftaran akun baru.</div>';
         }
     })
     .catch(error => {

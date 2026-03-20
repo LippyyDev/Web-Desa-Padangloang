@@ -340,6 +340,9 @@
 </div>
 
 <script>
+let csrfToken = '<?= csrf_token() ?>';
+let csrfHash  = '<?= csrf_hash() ?>';
+
 let currentPage = 1;
 const newsId = <?= $item['id'] ?>;
 
@@ -352,15 +355,25 @@ function loadMedia(page = 1) {
     document.getElementById('media-container').style.display = 'none';
     document.getElementById('empty-state').style.display = 'none';
     
-    // Fetch media via AJAX
-    fetch(`<?= base_url('/berita') ?>/${newsId}/ajax?page=${page}`, {
-        method: 'GET',
+    // Fetch media via AJAX POST
+    fetch(`<?= base_url('/berita/detail-api') ?>/${newsId}`, {
+        method: 'POST',
         headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
             'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        body: new URLSearchParams({
+            [csrfToken]: csrfHash,
+            page: page
+        })
     })
     .then(response => response.json())
     .then(data => {
+        // Refresh CSRF token dari response
+        if (data[csrfToken]) {
+            csrfHash = data[csrfToken];
+        }
+
         // Hide loading spinner
         document.getElementById('loading-spinner').style.display = 'none';
         

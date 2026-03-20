@@ -57,6 +57,15 @@
     });
 <?php endif; ?>
 
+<?php if (session()->getFlashdata('warning')): ?>
+    Swal.fire({
+        icon: 'warning',
+        title: 'Peringatan',
+        text: '<?= addslashes(session()->getFlashdata('warning')) ?>',
+        confirmButtonColor: '#ffc107'
+    });
+<?php endif; ?>
+
 // Global Delete Confirmation Handler (Event Delegation)
 document.addEventListener('click', async function(e) {
     const deleteLink = e.target.closest('a[href*="/hapus"]');

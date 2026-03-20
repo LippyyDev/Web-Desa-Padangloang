@@ -83,11 +83,12 @@ class LandingController extends BaseController
 
     public function galeriAjax()
     {
-        $albumModel   = new GalleryAlbumModel();
-        $mediaModel   = new GalleryMediaModel();
+        $albumModel = new GalleryAlbumModel();
+        $mediaModel = new GalleryMediaModel();
+        $csrfToken  = csrf_token();
         
-        $page = (int) ($this->request->getGet('page') ?? 1);
-        $search = $this->request->getGet('search');
+        $page = (int) ($this->request->getPost('page') ?? 1);
+        $search = $this->request->getPost('search');
         $perPage = 24;
         $offset = ($page - 1) * $perPage;
         
@@ -126,14 +127,15 @@ class LandingController extends BaseController
         }
 
         return $this->response->setJSON([
-            'success' => true,
-            'albums' => $albums,
+            $csrfToken   => csrf_hash(),
+            'success'    => true,
+            'albums'     => $albums,
             'albumMedia' => $albumMedia,
             'pagination' => [
                 'currentPage' => $page,
-                'totalPages' => $totalPages,
-                'total' => $total,
-                'perPage' => $perPage
+                'totalPages'  => $totalPages,
+                'total'       => $total,
+                'perPage'     => $perPage
             ]
         ]);
     }
@@ -155,8 +157,9 @@ class LandingController extends BaseController
     public function galeriDetailAjax($id)
     {
         $mediaModel = new GalleryMediaModel();
+        $csrfToken  = csrf_token();
         
-        $page = (int) ($this->request->getGet('page') ?? 1);
+        $page = (int) ($this->request->getPost('page') ?? 1);
         $perPage = 12; // Reverted to 12 items per page
         $offset = ($page - 1) * $perPage;
         
@@ -177,13 +180,14 @@ class LandingController extends BaseController
         }
 
         return $this->response->setJSON([
-            'success' => true,
-            'media' => $media,
+            $csrfToken   => csrf_hash(),
+            'success'    => true,
+            'media'      => $media,
             'pagination' => [
                 'currentPage' => $page,
-                'totalPages' => $totalPages,
-                'total' => $total,
-                'perPage' => $perPage
+                'totalPages'  => $totalPages,
+                'total'       => $total,
+                'perPage'     => $perPage
             ]
         ]);
     }
@@ -196,9 +200,10 @@ class LandingController extends BaseController
     public function beritaAjax()
     {
         $newsModel = new NewsModel();
+        $csrfToken  = csrf_token();
         
-        $page = (int) ($this->request->getGet('page') ?? 1);
-        $search = $this->request->getGet('search');
+        $page = (int) ($this->request->getPost('page') ?? 1);
+        $search = $this->request->getPost('search');
         $perPage = 24;
         $offset = ($page - 1) * $perPage;
         
@@ -227,7 +232,8 @@ class LandingController extends BaseController
         }
 
         return $this->response->setJSON([
-            'success' => true,
+            $csrfToken   => csrf_hash(),
+            'success'    => true,
             'news' => $news,
             'pagination' => [
                 'currentPage' => $page,
@@ -255,8 +261,9 @@ class LandingController extends BaseController
     public function detailBeritaAjax($id)
     {
         $mediaModel = new NewsMediaModel();
+        $csrfToken  = csrf_token();
         
-        $page = (int) ($this->request->getGet('page') ?? 1);
+        $page = (int) ($this->request->getPost('page') ?? 1);
         $perPage = 12;
         $offset = ($page - 1) * $perPage;
         
@@ -277,7 +284,8 @@ class LandingController extends BaseController
         }
 
         return $this->response->setJSON([
-            'success' => true,
+            $csrfToken   => csrf_hash(),
+            'success'    => true,
             'media' => $media,
             'pagination' => [
                 'currentPage' => $page,
@@ -296,9 +304,10 @@ class LandingController extends BaseController
     public function projectAjax()
     {
         $projectModel = new ProjectModel();
+        $csrfToken  = csrf_token();
         
-        $page = (int) ($this->request->getGet('page') ?? 1);
-        $search = $this->request->getGet('search');
+        $page = (int) ($this->request->getPost('page') ?? 1);
+        $search = $this->request->getPost('search');
         $perPage = 24;
         $offset = ($page - 1) * $perPage;
         
@@ -328,7 +337,8 @@ class LandingController extends BaseController
         }
 
         return $this->response->setJSON([
-            'success' => true,
+            $csrfToken   => csrf_hash(),
+            'success'    => true,
             'projects' => $projects,
             'pagination' => [
                 'currentPage' => $page,
@@ -365,8 +375,9 @@ class LandingController extends BaseController
     public function detailProjectAjax($id)
     {
         $mediaModel = new ProjectMediaModel();
+        $csrfToken  = csrf_token();
         
-        $page = (int) ($this->request->getGet('page') ?? 1);
+        $page = (int) ($this->request->getPost('page') ?? 1);
         $perPage = 12;
         $offset = ($page - 1) * $perPage;
         
@@ -387,7 +398,8 @@ class LandingController extends BaseController
         }
 
         return $this->response->setJSON([
-            'success' => true,
+            $csrfToken   => csrf_hash(),
+            'success'    => true,
             'media' => $media,
             'pagination' => [
                 'currentPage' => $page,

@@ -15,6 +15,7 @@ $menus = match($role) {
         ],
         'AKUN' => [
             ['label' => 'Profil', 'url' => '/admin/profil', 'icon' => 'bi-person'],
+            ['label' => 'Notifikasi', 'url' => '/admin/notifikasi', 'icon' => 'bi-bell'],
         ]
     ],
     'staf' => [

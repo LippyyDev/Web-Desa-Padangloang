@@ -238,6 +238,9 @@
 </section>
 
 <script>
+let csrfToken = '<?= csrf_token() ?>';
+let csrfHash  = '<?= csrf_hash() ?>';
+
 let currentPage = 1;
 let currentSearch = '';
 
@@ -265,15 +268,26 @@ function loadNews(page = 1) {
     document.getElementById('news-container').style.display = 'none';
     document.getElementById('empty-state').style.display = 'none';
     
-    // Fetch news via AJAX
-    fetch(`<?= base_url('/berita/ajax') ?>?page=${page}&search=${encodeURIComponent(currentSearch)}`, {
-        method: 'GET',
+    // Fetch news via AJAX POST
+    fetch(`<?= base_url('/berita/api') ?>`, {
+        method: 'POST',
         headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
             'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        body: new URLSearchParams({
+            [csrfToken]: csrfHash,
+            page: page,
+            search: currentSearch
+        })
     })
     .then(response => response.json())
     .then(data => {
+        // Refresh CSRF token dari response
+        if (data[csrfToken]) {
+            csrfHash = data[csrfToken];
+        }
+
         // Hide loading spinner
         document.getElementById('loading-spinner').style.display = 'none';
         

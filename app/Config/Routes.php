@@ -8,17 +8,17 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Guest\LandingController::index');
 $routes->get('/profil', 'Guest\LandingController::profil');
 $routes->get('/galeri', 'Guest\LandingController::galeri');
-$routes->get('/galeri/ajax', 'Guest\LandingController::galeriAjax');
+$routes->post('/galeri/api', 'Guest\LandingController::galeriAjax');
 $routes->get('/galeri/(:num)', 'Guest\LandingController::galeriDetail/$1');
-$routes->get('/galeri/detail-ajax/(:num)', 'Guest\LandingController::galeriDetailAjax/$1');
+$routes->post('/galeri/detail-api/(:num)', 'Guest\LandingController::galeriDetailAjax/$1');
 $routes->get('/berita', 'Guest\LandingController::berita');
-$routes->get('/berita/ajax', 'Guest\LandingController::beritaAjax');
+$routes->post('/berita/api', 'Guest\LandingController::beritaAjax');
 $routes->get('/berita/(:num)', 'Guest\LandingController::detailBerita/$1');
-$routes->get('/berita/(:num)/ajax', 'Guest\LandingController::detailBeritaAjax/$1');
+$routes->post('/berita/detail-api/(:num)', 'Guest\LandingController::detailBeritaAjax/$1');
 $routes->get('/project', 'Guest\LandingController::project');
-$routes->get('/project/ajax', 'Guest\LandingController::projectAjax');
+$routes->post('/project/api', 'Guest\LandingController::projectAjax');
 $routes->get('/project/(:num)', 'Guest\LandingController::detailProject/$1');
-$routes->get('/project/(:num)/ajax', 'Guest\LandingController::detailProjectAjax/$1');
+$routes->post('/project/detail-api/(:num)', 'Guest\LandingController::detailProjectAjax/$1');
 
 $routes->get('/login', 'Guest\AuthController::login');
 $routes->post('/login', 'Guest\AuthController::doLogin');
@@ -58,7 +58,11 @@ $routes->group('user', static function ($routes) {
     $routes->get('surat/template/(:segment)', 'Staff\PdfWordController::downloadTemplate/$1');
 
     $routes->get('notifikasi', 'User\NotificationController::index');
+    $routes->post('notifikasi/api', 'User\NotificationController::api');
     $routes->get('notifikasi/(:num)/read', 'User\NotificationController::markRead/$1');
+
+    $routes->get('surat/lampiran/(:num)', 'User\LetterController::serveAttachment/$1');
+    $routes->get('surat/balasan-lampiran/(:num)', 'User\LetterController::serveReplyAttachment/$1');
 });
 
 $routes->group('staff', static function ($routes) {
@@ -80,7 +84,7 @@ $routes->group('staff', static function ($routes) {
     $routes->post('desa', 'Staff\ContentController::updateDesaProfile');
 
     $routes->get('galeri', 'Staff\ContentController::gallery');
-    $routes->get('galeri/api', 'Staff\ContentController::galleryApi');
+    $routes->post('galeri/api', 'Staff\ContentController::galleryApi');
     $routes->get('galeri/tambah', 'Staff\ContentController::createGallery');
     $routes->get('galeri/(:num)/edit', 'Staff\ContentController::editGallery/$1');
     $routes->post('galeri', 'Staff\ContentController::storeGallery');
@@ -89,7 +93,7 @@ $routes->group('staff', static function ($routes) {
     $routes->get('galeri/media/(:num)/hapus', 'Staff\ContentController::deleteGalleryMedia/$1');
 
     $routes->get('berita', 'Staff\ContentController::news');
-    $routes->get('berita/api', 'Staff\ContentController::newsApi');
+    $routes->post('berita/api', 'Staff\ContentController::newsApi');
     $routes->get('berita/tambah', 'Staff\ContentController::createNews');
     $routes->get('berita/(:num)/edit', 'Staff\ContentController::editNews/$1');
     $routes->post('berita', 'Staff\ContentController::storeNews');
@@ -98,7 +102,7 @@ $routes->group('staff', static function ($routes) {
     $routes->get('berita/media/(:num)/hapus', 'Staff\ContentController::deleteNewsMedia/$1');
 
     $routes->get('projects', 'Staff\ContentController::projects');
-    $routes->get('projects/api', 'Staff\ContentController::projectsApi');
+    $routes->post('projects/api', 'Staff\ContentController::projectsApi');
     $routes->get('projects/tambah', 'Staff\ContentController::createProject');
     $routes->get('projects/(:num)/edit', 'Staff\ContentController::editProject/$1');
     $routes->post('projects', 'Staff\ContentController::storeProject');
@@ -107,7 +111,7 @@ $routes->group('staff', static function ($routes) {
     $routes->get('projects/media/(:num)/hapus', 'Staff\ContentController::deleteProjectMedia/$1');
 
     $routes->get('perangkat-desa', 'Staff\ContentController::perangkatDesa');
-    $routes->get('perangkat-desa/api', 'Staff\ContentController::perangkatDesaApi');
+    $routes->post('perangkat-desa/api', 'Staff\ContentController::perangkatDesaApi');
     $routes->get('perangkat-desa/tambah', 'Staff\ContentController::createPerangkatDesa');
     $routes->get('perangkat-desa/(:num)/edit', 'Staff\ContentController::editPerangkatDesa/$1');
     $routes->post('perangkat-desa', 'Staff\ContentController::storePerangkatDesa');
@@ -115,13 +119,17 @@ $routes->group('staff', static function ($routes) {
     $routes->get('perangkat-desa/(:num)/hapus', 'Staff\ContentController::deletePerangkatDesa/$1');
 
     $routes->get('notifikasi', 'Staff\NotificationController::index');
+    $routes->post('notifikasi/api', 'Staff\NotificationController::api');
     $routes->get('notifikasi/(:num)/read', 'Staff\NotificationController::markRead/$1');
+
+    $routes->get('surat/lampiran/(:num)', 'Staff\LetterController::serveAttachment/$1');
+    $routes->get('surat/balasan-lampiran/(:num)', 'Staff\LetterController::serveReplyAttachment/$1');
 });
 
 $routes->group('admin', static function ($routes) {
     $routes->get('dashboard', 'Admin\DashboardController::index');
     $routes->get('akun', 'Admin\AccountController::index');
-    $routes->get('akun/api', 'Admin\AccountController::api');
+    $routes->post('akun/api', 'Admin\AccountController::api');
     $routes->get('akun/tambah', 'Admin\AccountController::create');
     $routes->get('akun/(:num)/edit', 'Admin\AccountController::edit/$1');
     $routes->post('akun', 'Admin\AccountController::store');
@@ -131,4 +139,7 @@ $routes->group('admin', static function ($routes) {
     $routes->get('profil', 'Admin\ProfileController::index');
     $routes->post('profil', 'Admin\ProfileController::update');
     $routes->post('profil/ubah-password', 'Admin\ProfileController::changePassword');
+    
+    $routes->get('notifikasi', 'Admin\NotificationController::index');
+    $routes->post('notifikasi/api', 'Admin\NotificationController::api');
 });

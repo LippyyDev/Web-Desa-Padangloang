@@ -13,12 +13,25 @@ class NotificationController extends ProtectedController
             return $redirect;
         }
 
-        $notifModel = new NotificationModel();
+        return view('Staff/notifications');
+    }
 
-        return view('Staff/notifications', [
-            'notifications' => $notifModel->where('user_id', $this->currentUser['id'])
-                ->orderBy('created_at', 'DESC')
-                ->findAll(),
+    public function api()
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $notifModel = new NotificationModel();
+        
+        $notifications = $notifModel->where('user_id', $this->currentUser['id'])
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        return $this->response->setJSON([
+            csrf_token() => csrf_hash(),
+            'success' => true,
+            'notifications' => $notifications
         ]);
     }
 

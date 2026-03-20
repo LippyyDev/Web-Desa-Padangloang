@@ -50,6 +50,9 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
 
 <script>
+let csrfToken = '<?= csrf_token() ?>';
+let csrfHash  = '<?= csrf_hash() ?>';
+
 let currentPage = 1;
 let itemsPerPage = 10;
 let totalRecords = 0;
@@ -67,21 +70,27 @@ function getRoleBadge(role) {
 function loadCards(page = 1) {
     const container = $('#accountsCardContainer');
     container.html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
-    
+
     const start = (page - 1) * itemsPerPage;
-    
+
     $.ajax({
         url: '<?= base_url('/admin/akun/api') ?>',
-        type: 'GET',
+        type: 'POST',
         data: {
+            [csrfToken]: csrfHash,
             draw: page,
             start: start,
             length: itemsPerPage,
             order: [{ column: 5, dir: 'desc' }]
         },
         success: function(response) {
+            // Refresh CSRF token dari response
+            if (response[csrfToken]) {
+                csrfHash = response[csrfToken];
+            }
+
             container.empty();
-            
+
             if (!response.data || response.data.length === 0) {
                 container.html('<div class="text-center py-5"><p class="text-muted">Tidak ada data akun</p></div>');
                 totalRecords = 0;
@@ -89,11 +98,11 @@ function loadCards(page = 1) {
                 renderPagination();
                 return;
             }
-            
+
             totalRecords = response.recordsFiltered || response.recordsTotal || 0;
             totalPages = Math.ceil(totalRecords / itemsPerPage);
             currentPage = page;
-            
+
             response.data.forEach(function(account) {
                 const fotoUrl = account.foto_profil ? '<?= base_url() ?>' + account.foto_profil : '<?= base_url('assets/img/guest.webp') ?>';
                 const card = `
@@ -131,7 +140,7 @@ function loadCards(page = 1) {
                 `;
                 container.append(card);
             });
-            
+
             renderPagination();
         },
         error: function() {
@@ -143,11 +152,11 @@ function loadCards(page = 1) {
 function renderPagination() {
     const pagination = $('#customPagination');
     pagination.empty();
-    
+
     if (totalPages <= 1) return;
-    
+
     let paginationHTML = '<div class="pagination-wrapper">';
-    
+
     // Previous button
     if (currentPage > 1) {
         paginationHTML += `<button class="pagination-btn" onclick="goToPage(${currentPage - 1})">
@@ -158,16 +167,15 @@ function renderPagination() {
             <i class="bi bi-chevron-left"></i>
         </button>`;
     }
-    
+
     // Page numbers (max 3 buttons)
     let startPage = Math.max(1, currentPage - 1);
-    let endPage = Math.min(totalPages, startPage + 2);
-    
-    // Adjust if we're near the end
+    let endPage   = Math.min(totalPages, startPage + 2);
+
     if (endPage - startPage < 2) {
         startPage = Math.max(1, endPage - 2);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
         if (i === currentPage) {
             paginationHTML += `<button class="pagination-btn active">${i}</button>`;
@@ -175,7 +183,7 @@ function renderPagination() {
             paginationHTML += `<button class="pagination-btn" onclick="goToPage(${i})">${i}</button>`;
         }
     }
-    
+
     // Next button
     if (currentPage < totalPages) {
         paginationHTML += `<button class="pagination-btn" onclick="goToPage(${currentPage + 1})">
@@ -186,7 +194,7 @@ function renderPagination() {
             <i class="bi bi-chevron-right"></i>
         </button>`;
     }
-    
+
     paginationHTML += '</div>';
     pagination.html(paginationHTML);
 }
@@ -214,13 +222,11 @@ function checkViewMode() {
 // Tunggu jQuery dan semua script ter-load
 (function() {
     function loadDataTables() {
-        // Cek apakah jQuery sudah ter-load
         if (typeof jQuery === 'undefined' || typeof $ === 'undefined') {
             setTimeout(loadDataTables, 100);
             return;
         }
 
-        // Load DataTables script jika belum ter-load
         if (typeof $.fn.DataTable === 'undefined') {
             const dataTablesScript = document.createElement('script');
             dataTablesScript.src = 'https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js';
@@ -246,43 +252,52 @@ function checkViewMode() {
                 serverSide: true,
                 ajax: {
                     url: '<?= base_url('/admin/akun/api') ?>',
-                    type: 'GET',
-                    dataSrc: 'data'
+                    type: 'POST',
+                    dataSrc: function(json) {
+                        // Refresh CSRF token dari response
+                        if (json[csrfToken]) {
+                            csrfHash = json[csrfToken];
+                        }
+                        return json.data;
+                    },
+                    data: function(d) {
+                        d[csrfToken] = csrfHash;
+                    }
                 },
                 columns: [
-                    { 
+                    {
                         data: 'foto_profil',
                         orderable: false,
                         searchable: false,
                         render: function(data) {
                             const fotoUrl = data ? '<?= base_url() ?>' + data : '<?= base_url('assets/img/guest.webp') ?>';
                             return '<img src="' + fotoUrl + '" alt="Foto Profil" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">';
-            }
+                        }
                     },
-                    { 
+                    {
                         data: 'username',
                         className: 'fw-semibold'
                     },
-                    { 
+                    {
                         data: 'email'
                     },
-                    { 
+                    {
                         data: 'role',
                         render: function(data) {
                             return getRoleBadge(data);
-        }
+                        }
                     },
-                    { 
+                    {
                         data: 'status',
                         render: function(data) {
                             return getStatusBadge(data);
-        }
+                        }
                     },
-                    { 
+                    {
                         data: 'created_at',
                         className: 'small text-muted'
                     },
-                    { 
+                    {
                         data: 'id',
                         orderable: false,
                         searchable: false,
@@ -307,10 +322,10 @@ function checkViewMode() {
                 pageLength: 10,
                 lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]]
             });
-            
+
             // Check initial view mode
             checkViewMode();
-            
+
             // Handle window resize
             $(window).resize(function() {
                 checkViewMode();
@@ -327,6 +342,3 @@ function checkViewMode() {
 })();
 </script>
 <?= $this->endSection() ?>
-
-
-

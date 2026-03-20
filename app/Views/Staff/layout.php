@@ -56,6 +56,15 @@
     });
 <?php endif; ?>
 
+<?php if (session()->getFlashdata('warning')): ?>
+    Swal.fire({
+        icon: 'warning',
+        title: 'Peringatan',
+        text: '<?= addslashes(session()->getFlashdata('warning')) ?>',
+        confirmButtonColor: '#ffc107'
+    });
+<?php endif; ?>
+
 // Global SweetAlert2 Confirmation Function
 function confirmDelete(message = 'Apakah Anda yakin ingin menghapus data ini?') {
     return Swal.fire({

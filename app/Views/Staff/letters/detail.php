@@ -73,7 +73,7 @@
                         elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) $icon = 'bi-file-earmark-image-fill text-info';
                         ?>
                         <li class="mb-1">
-                            <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                            <a href="<?= base_url('/staff/surat/lampiran/' . $att['id']) ?>" target="_blank" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
                                 <i class="bi <?= $icon ?> flex-shrink-0"></i>
                                 <span class="attachment-filename"><?= esc($att['original_name'] ?: basename($att['file_path'])) ?></span>
                             </a>
@@ -200,7 +200,7 @@
                                         elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) $icon = 'bi-file-earmark-image-fill text-info';
                                         ?>
                                         <li class="mb-1">
-                                            <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+                                            <a href="<?= base_url('/staff/surat/balasan-lampiran/' . $att['id']) ?>" target="_blank" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1">
                                                 <i class="bi <?= $icon ?> flex-shrink-0"></i>
                                                 <span class="attachment-filename"><?= esc($att['original_name'] ?: 'lampiran') ?></span>
                                             </a>

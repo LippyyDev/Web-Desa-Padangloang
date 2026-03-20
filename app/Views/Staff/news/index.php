@@ -73,6 +73,9 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
+let csrfToken = '<?= csrf_token() ?>';
+let csrfHash  = '<?= csrf_hash() ?>';
+
 $(document).ready(function() {
     let currentPage = 1;
     let isLoading = false;
@@ -82,7 +85,7 @@ $(document).ready(function() {
 
     function loadNews(page, search = '', itemsPerPage = limit) {
         if (isLoading) return;
-        
+
         isLoading = true;
         $('#loadingIndicator').show();
         $('#newsContainer').empty();
@@ -90,12 +93,13 @@ $(document).ready(function() {
         $('#emptyMessage').hide();
 
         const dateStart = $('#filterDateStart').val();
-        const dateEnd = $('#filterDateEnd').val();
+        const dateEnd   = $('#filterDateEnd').val();
 
         $.ajax({
             url: '<?= base_url('/staff/berita/api') ?>',
-            type: 'GET',
+            type: 'POST',
             data: {
+                [csrfToken]: csrfHash,
                 page: page,
                 limit: itemsPerPage,
                 search: search,
@@ -103,6 +107,11 @@ $(document).ready(function() {
                 date_end: dateEnd
             },
             success: function(response) {
+                // Refresh CSRF token dari response
+                if (response[csrfToken]) {
+                    csrfHash = response[csrfToken];
+                }
+
                 if (response.data && response.data.length > 0) {
                     let html = '';
                     response.data.forEach(function(item) {
@@ -126,15 +135,14 @@ $(document).ready(function() {
                             '</div>';
                     });
                     $('#newsContainer').html(html);
-                    
-                    currentPage = page;
-                    totalPages = response.total_pages;
+
+                    currentPage   = page;
+                    totalPages    = response.total_pages;
                     currentSearch = search;
-                    limit = itemsPerPage;
-                    
-                    // Generate pagination
+                    limit         = itemsPerPage;
+
                     renderPagination();
-                    
+
                     if (totalPages > 1) {
                         $('#customPagination').show();
                     }
@@ -142,7 +150,7 @@ $(document).ready(function() {
                     $('#emptyMessage').show();
                     $('#customPagination').hide();
                 }
-                
+
                 isLoading = false;
                 $('#loadingIndicator').hide();
             },
@@ -162,14 +170,14 @@ $(document).ready(function() {
     function renderPagination() {
         const pagination = $('#customPagination');
         pagination.empty();
-        
+
         if (totalPages <= 1) {
             pagination.hide();
             return;
         }
-        
+
         let paginationHTML = '<div class="pagination-wrapper">';
-        
+
         // Previous button
         if (currentPage > 1) {
             paginationHTML += `<button class="pagination-btn" data-page="${currentPage - 1}">
@@ -180,16 +188,15 @@ $(document).ready(function() {
                 <i class="bi bi-chevron-left"></i>
             </button>`;
         }
-        
+
         // Page numbers (max 3 buttons)
         let startPage = Math.max(1, currentPage - 1);
-        let endPage = Math.min(totalPages, startPage + 2);
-        
-        // Adjust if we're near the end
+        let endPage   = Math.min(totalPages, startPage + 2);
+
         if (endPage - startPage < 2) {
             startPage = Math.max(1, endPage - 2);
         }
-        
+
         for (let i = startPage; i <= endPage; i++) {
             if (i === currentPage) {
                 paginationHTML += `<button class="pagination-btn active">${i}</button>`;
@@ -197,7 +204,7 @@ $(document).ready(function() {
                 paginationHTML += `<button class="pagination-btn" data-page="${i}">${i}</button>`;
             }
         }
-        
+
         // Next button
         if (currentPage < totalPages) {
             paginationHTML += `<button class="pagination-btn" data-page="${currentPage + 1}">
@@ -208,7 +215,7 @@ $(document).ready(function() {
                 <i class="bi bi-chevron-right"></i>
             </button>`;
         }
-        
+
         paginationHTML += '</div>';
         pagination.html(paginationHTML);
     }
@@ -233,7 +240,7 @@ $(document).ready(function() {
         const search = $('#searchInput').val().trim();
         currentSearch = search;
         loadNews(1, search, limit);
-        
+
         if (search) {
             $('#clearSearchBtn').show();
             $('.news-search-container .input-group').addClass('has-clear-btn');
@@ -274,7 +281,7 @@ $(document).ready(function() {
             loadNews(1, currentSearch, limit);
         }, 300);
     }
-    
+
     // Auto filter on change
     $('#filterDateStart, #filterDateEnd').on('change', function() {
         applyFilter();
@@ -285,6 +292,3 @@ $(document).ready(function() {
 });
 </script>
 <?= $this->endSection() ?>
-
-
-

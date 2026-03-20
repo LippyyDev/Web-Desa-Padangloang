@@ -384,7 +384,7 @@ class LetterController extends ProtectedController
         // Hapus lampiran surat
         $attachments = $attachmentModel->where('letter_id', $id)->findAll();
         foreach ($attachments as $att) {
-            $filePath = FCPATH . ltrim($att['file_path'], '/');
+            $filePath = WRITEPATH . 'uploads/letters/' . basename($att['file_path']);
             if (is_file($filePath)) {
                 @unlink($filePath);
             }
@@ -397,7 +397,7 @@ class LetterController extends ProtectedController
             // Hapus lampiran balasan
             $replyAttachments = $replyAttachModel->where('reply_id', $reply['id'])->findAll();
             foreach ($replyAttachments as $replyAtt) {
-                $filePath = FCPATH . ltrim($replyAtt['file_path'], '/');
+                $filePath = WRITEPATH . 'uploads/replies/' . basename($replyAtt['file_path']);
                 if (is_file($filePath)) {
                     @unlink($filePath);
                 }
@@ -440,7 +440,7 @@ class LetterController extends ProtectedController
         // Hapus lampiran balasan
         $attachments = $replyAttachModel->where('reply_id', $replyId)->findAll();
         foreach ($attachments as $att) {
-            $filePath = FCPATH . ltrim($att['file_path'], '/');
+            $filePath = WRITEPATH . 'uploads/replies/' . basename($att['file_path']);
             if (is_file($filePath)) {
                 @unlink($filePath);
             }
@@ -471,7 +471,7 @@ class LetterController extends ProtectedController
             return;
         }
 
-        $uploadPath      = FCPATH . 'uploads/replies';
+        $uploadPath      = WRITEPATH . 'uploads/replies';
         $replyAttachModel= new ReplyAttachmentModel();
         $this->ensureUploadPath($uploadPath);
 
@@ -493,12 +493,64 @@ class LetterController extends ProtectedController
 
             $replyAttachModel->insert([
                 'reply_id'      => $replyId,
-                'file_path'     => 'uploads/replies/' . $newName,
+                'file_path'     => 'replies/' . $newName,
                 'original_name' => $file->getClientName(),
                 'mime_type'     => $file->getClientMimeType(),
                 'file_size'     => $file->getSize(),
             ]);
         }
+    }
+
+    /**
+     * Serve lampiran surat secara aman (hanya staff)
+     */
+    public function serveAttachment($id)
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $redirect;
+        }
+
+        $attachmentModel = new LetterAttachmentModel();
+        $att = $attachmentModel->find($id);
+        if (!$att) {
+            return $this->response->setStatusCode(404);
+        }
+
+        $filePath = WRITEPATH . 'uploads/letters/' . basename($att['file_path']);
+        if (!is_file($filePath)) {
+            return $this->response->setStatusCode(404);
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', $att['mime_type'])
+            ->setHeader('Content-Disposition', 'inline; filename="' . $att['original_name'] . '"')
+            ->setBody(file_get_contents($filePath));
+    }
+
+    /**
+     * Serve lampiran balasan surat secara aman (hanya staff)
+     */
+    public function serveReplyAttachment($id)
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $redirect;
+        }
+
+        $replyAttachModel = new ReplyAttachmentModel();
+        $att = $replyAttachModel->find($id);
+        if (!$att) {
+            return $this->response->setStatusCode(404);
+        }
+
+        $filePath = WRITEPATH . 'uploads/replies/' . basename($att['file_path']);
+        if (!is_file($filePath)) {
+            return $this->response->setStatusCode(404);
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', $att['mime_type'])
+            ->setHeader('Content-Disposition', 'inline; filename="' . $att['original_name'] . '"')
+            ->setBody(file_get_contents($filePath));
     }
 }
 

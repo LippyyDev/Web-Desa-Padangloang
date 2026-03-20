@@ -294,6 +294,9 @@
 
 <script>
     const albumId = <?= $album['id'] ?>;
+    let csrfToken = '<?= csrf_token() ?>';
+    let csrfHash  = '<?= csrf_hash() ?>';
+
     let currentPage = 1;
     let isLoading = false;
 
@@ -318,9 +321,24 @@
         `;
         
         try {
-            const response = await fetch(`<?= base_url('galeri/detail-ajax') ?>/${albumId}?page=${page}`);
+            const response = await fetch(`<?= base_url('galeri/detail-api') ?>/${albumId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({
+                    [csrfToken]: csrfHash,
+                    page: page
+                })
+            });
             const data = await response.json();
             
+            // Refresh CSRF token dari response
+            if (data[csrfToken]) {
+                csrfHash = data[csrfToken];
+            }
+
             if (data.success) {
                 renderMedia(data.media);
                 renderPagination(data.pagination);
