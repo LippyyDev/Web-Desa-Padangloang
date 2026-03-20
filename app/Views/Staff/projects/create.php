@@ -15,12 +15,15 @@
 
 <div class="card">
     <div class="card-body">
-        <form method="post" enctype="multipart/form-data" action="<?= base_url('/staff/projects') ?>">
+        <form method="post" enctype="multipart/form-data" action="<?= base_url('/staff/projects') ?>" id="projectForm">
             <?= csrf_field() ?>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">Judul</label>
-                    <input type="text" class="form-control" name="judul" required>
+                    <label class="form-label">Judul <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="judul" id="judulInput" maxlength="150" required>
+                    <div class="d-flex justify-content-end mt-1">
+                        <small class="text-muted"><span id="judulCount">0</span>/150 karakter</small>
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Tanggal</label>
@@ -42,20 +45,25 @@
                 <div class="col-md-6">
                     <label class="form-label">Thumbnail</label>
                     <input type="file" class="form-control" id="thumbnailInput" name="thumbnail" accept="image/jpeg,image/jpg,image/png,image/webp">
+                    <small class="text-muted">Maks. 1 MB (JPEG, JPG, PNG, WEBP)</small>
+                    <div class="text-danger small mt-1" id="thumbnailError" style="display:none;"></div>
                     <div id="thumbnailPreview" class="mt-2"></div>
                 </div>
                 <div class="col-12">
                     <label class="form-label">Upload Foto</label>
                     <input type="file" class="form-control" id="mediaInput" name="media[]" multiple accept="image/jpeg,image/jpg,image/png,image/webp">
+                    <small class="text-muted">Maks. 1 MB per foto (JPEG, JPG, PNG, WEBP)</small>
+                    <div class="text-danger small mt-1" id="mediaError" style="display:none;"></div>
                     <div id="mediaPreview" class="row g-2 mt-2"></div>
                 </div>
                 <div class="col-12">
                     <label class="form-label">Link Video</label>
                     <div id="video-list"></div>
                     <button type="button" class="btn btn-outline-primary btn-sm" id="add-video">Tambah Link</button>
+                    <small class="text-muted d-block mt-1">Hanya link YouTube (youtube.com / youtu.be) yang diizinkan</small>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Deskripsi</label>
+                    <label class="form-label">Deskripsi <span class="text-danger">*</span></label>
                     <textarea class="form-control" name="deskripsi" rows="4" required></textarea>
                 </div>
             </div>
@@ -69,53 +77,68 @@
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Preview Thumbnail
-        const thumbnailInput = document.getElementById('thumbnailInput');
-        const thumbnailPreview = document.getElementById('thumbnailPreview');
-        thumbnailInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    thumbnailPreview.innerHTML = '<img src="' + e.target.result + '" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: cover;">';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                thumbnailPreview.innerHTML = '';
-            }
+        const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+
+        // ── Judul character counter ──────────────────────────────────────
+        const judulInput = document.getElementById('judulInput');
+        const judulCount = document.getElementById('judulCount');
+        judulInput.addEventListener('input', () => {
+            judulCount.textContent = judulInput.value.length;
         });
 
-        // Preview Media Foto (DataTransfer + tombol hapus)
-        const mediaInput = document.getElementById('mediaInput');
+        // ── Thumbnail preview + size validation ─────────────────────────
+        const thumbnailInput   = document.getElementById('thumbnailInput');
+        const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const thumbnailError   = document.getElementById('thumbnailError');
+        thumbnailInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            thumbnailError.style.display = 'none';
+            thumbnailPreview.innerHTML   = '';
+            if (!file) return;
+            if (file.size > MAX_FILE_SIZE) {
+                thumbnailError.textContent = 'Ukuran thumbnail terlalu besar (' + (file.size / 1024 / 1024).toFixed(2) + ' MB). Maksimal 1 MB.';
+                thumbnailError.style.display = 'block';
+                thumbnailInput.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                thumbnailPreview.innerHTML = '<img src="' + ev.target.result + '" class="img-thumbnail" style="max-width:200px;max-height:200px;object-fit:cover;">';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ── Media Foto preview + size validation ────────────────────────
+        const mediaInput   = document.getElementById('mediaInput');
         const mediaPreview = document.getElementById('mediaPreview');
-        let selectedFiles = [];
-        let fileIdCounter = 0;
+        const mediaError   = document.getElementById('mediaError');
+        let selectedFiles  = [];
+        let fileIdCounter  = 0;
+
         function updateFileInput() {
-            const dataTransfer = new DataTransfer();
-            selectedFiles.forEach(f => dataTransfer.items.add(f.file));
-            mediaInput.files = dataTransfer.files;
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f.file));
+            mediaInput.files = dt.files;
         }
         function renderPreview() {
             mediaPreview.innerHTML = '';
-            selectedFiles.forEach((fileObj) => {
-                if (fileObj.file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const col = document.createElement('div');
-                        col.className = 'col-md-3';
-                        col.setAttribute('data-file-id', fileObj.id);
-                        col.innerHTML = `
-                            <div class="border rounded p-2 text-center position-relative">
-                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" style="width: 28px; height: 28px; padding: 0; line-height: 1; border-radius: 50%;" onclick="removeFile('${fileObj.id}')" title="Hapus">
-                                    <span style="font-size: 18px;">×</span>
-                                </button>
-                                <img src="${e.target.result}" class="img-fluid rounded" style="max-width: 100%; max-height: 150px; object-fit: cover;" alt="preview">
-                            </div>
-                        `;
-                        mediaPreview.appendChild(col);
-                    };
-                    reader.readAsDataURL(fileObj.file);
-                }
+            selectedFiles.forEach(function (fileObj) {
+                if (!fileObj.file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3';
+                    col.setAttribute('data-file-id', fileObj.id);
+                    col.innerHTML =
+                        '<div class="border rounded p-2 text-center position-relative">' +
+                            '<button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" style="width:28px;height:28px;padding:0;line-height:1;border-radius:50%;" onclick="removeFile(\'' + fileObj.id + '\')" title="Hapus">' +
+                                '<span style="font-size:18px;">&times;</span>' +
+                            '</button>' +
+                            '<img src="' + ev.target.result + '" class="img-fluid rounded" style="max-width:100%;max-height:150px;object-fit:cover;" alt="preview">' +
+                        '</div>';
+                    mediaPreview.appendChild(col);
+                };
+                reader.readAsDataURL(fileObj.file);
             });
         }
         function removeFile(fileId) {
@@ -124,36 +147,100 @@
             renderPreview();
         }
         window.removeFile = removeFile;
-        mediaInput.addEventListener('change', function(e) {
-            Array.from(e.target.files).forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    const isDuplicate = selectedFiles.some(f =>
-                        f.file.name === file.name && f.file.size === file.size && f.file.lastModified === file.lastModified
-                    );
-                    if (!isDuplicate) selectedFiles.push({ id: 'file_' + (fileIdCounter++), file });
+
+        mediaInput.addEventListener('change', function (e) {
+            mediaError.style.display = 'none';
+            var oversized = [];
+            Array.from(e.target.files).forEach(function (file) {
+                if (!file.type.startsWith('image/')) return;
+                if (file.size > MAX_FILE_SIZE) {
+                    oversized.push('"' + file.name + '" (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)');
+                    return;
                 }
+                const isDuplicate = selectedFiles.some(f =>
+                    f.file.name === file.name && f.file.size === file.size && f.file.lastModified === file.lastModified
+                );
+                if (!isDuplicate) selectedFiles.push({ id: 'file_' + (fileIdCounter++), file: file });
             });
+            if (oversized.length) {
+                mediaError.textContent = 'File berikut melebihi 1 MB dan tidak ditambahkan: ' + oversized.join(', ');
+                mediaError.style.display = 'block';
+            }
             updateFileInput();
             renderPreview();
         });
 
-        // Video links
-        const list = document.getElementById('video-list');
-        const addBtn = document.getElementById('add-video');
-        const addField = (value = '') => {
+        // ── Video links – YouTube validation ────────────────────────────
+        const videoList = document.getElementById('video-list');
+        const addBtn    = document.getElementById('add-video');
+
+        function isValidYouTube(url) {
+            var u = url.trim().toLowerCase();
+            return u === '' || u.includes('youtube.com') || u.includes('youtu.be');
+        }
+
+        function addField(value) {
+            value = value || '';
             const group = document.createElement('div');
             group.className = 'd-flex gap-2 mb-2 video-item';
-            group.innerHTML = `
-                <input type="text" class="form-control" name="video_links[]" placeholder="https://youtube.com/..." value="${value}">
-                <button type="button" class="btn btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
-            `;
-            group.querySelector('button').addEventListener('click', () => group.remove());
-            list.appendChild(group);
-        };
-        addBtn.addEventListener('click', () => addField(''));
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex-grow-1';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control video-link-input';
+            input.name = 'video_links[]';
+            input.placeholder = 'https://youtube.com/...';
+            input.value = value;
+            const errMsg = document.createElement('div');
+            errMsg.className = 'text-danger small mt-1 video-link-error';
+            errMsg.style.display = 'none';
+            errMsg.textContent = 'Link harus mengandung youtube.com atau youtu.be.';
+            input.addEventListener('input', function () {
+                if (input.value.trim() !== '' && !isValidYouTube(input.value)) {
+                    errMsg.style.display = 'block';
+                    input.classList.add('is-invalid');
+                } else {
+                    errMsg.style.display = 'none';
+                    input.classList.remove('is-invalid');
+                }
+            });
+            wrapper.appendChild(input);
+            wrapper.appendChild(errMsg);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-outline-danger';
+            btn.title = 'Hapus';
+            btn.innerHTML = '<i class="bi bi-trash"></i>';
+            btn.addEventListener('click', function () { group.remove(); });
+            group.appendChild(wrapper);
+            group.appendChild(btn);
+            videoList.appendChild(group);
+        }
+
+        addBtn.addEventListener('click', function () { addField(''); });
         addField('');
+
+        // ── Form submit validation ───────────────────────────────────────
+        document.getElementById('projectForm').addEventListener('submit', function (e) {
+            var valid = true;
+
+            // Thumbnail
+            if (thumbnailInput.files[0] && thumbnailInput.files[0].size > MAX_FILE_SIZE) {
+                valid = false;
+            }
+
+            // YouTube links
+            document.querySelectorAll('.video-link-input').forEach(function (inp) {
+                if (inp.value.trim() !== '' && !isValidYouTube(inp.value)) {
+                    valid = false;
+                }
+            });
+
+            if (!valid) {
+                e.preventDefault();
+                alert('Harap perbaiki kesalahan pada form sebelum menyimpan.');
+            }
+        });
     });
 </script>
 <?= $this->endSection() ?>
-
-

@@ -227,29 +227,15 @@ class ContentController extends ProtectedController
             // Fix EXIF orientation before conversion
             $this->fixImageOrientation($tempPath);
             
-            // Convert ke WebP
-            $image = \Config\Services::image();
+            // Convert ke WebP (handle source that is already WEBP)
             $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
             $webpPath = $path . '/' . $webpName;
             
-            try {
-                $image->withFile($tempPath)
-                    ->convert(IMAGETYPE_WEBP)
-                    ->save($webpPath, 85); // Quality 85
-                
-                // Hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                
-                $data['thumbnail'] = 'uploads/gallery/' . $webpName;
-            } catch (\Exception $e) {
-                // Jika konversi gagal, hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
+            if (!$this->convertToWebp($tempPath, $webpPath, $extension)) {
                 return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail. Pastikan file adalah gambar yang valid.');
             }
+            
+            $data['thumbnail'] = 'uploads/gallery/' . $webpName;
         }
 
         $albumId = $albumModel->insert($data, true);
@@ -304,29 +290,15 @@ class ContentController extends ProtectedController
             // Fix EXIF orientation before conversion
             $this->fixImageOrientation($tempPath);
             
-            // Convert ke WebP
-            $image = \Config\Services::image();
+            // Convert ke WebP (handle source that is already WEBP)
             $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
             $webpPath = $path . '/' . $webpName;
             
-            try {
-                $image->withFile($tempPath)
-                    ->convert(IMAGETYPE_WEBP)
-                    ->save($webpPath, 85); // Quality 85
-                
-                // Hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                
-                $data['thumbnail'] = 'uploads/gallery/' . $webpName;
-            } catch (\Exception $e) {
-                // Jika konversi gagal, hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
+            if (!$this->convertToWebp($tempPath, $webpPath, $extension)) {
                 return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail. Pastikan file adalah gambar yang valid.');
             }
+            
+            $data['thumbnail'] = 'uploads/gallery/' . $webpName;
         }
 
         $albumModel->update($id, $data);
@@ -357,7 +329,7 @@ class ContentController extends ProtectedController
             $albumModel->delete($id);
         }
 
-        return redirect()->back()->with('success', 'Album dihapus.');
+        return redirect()->to('/staff/galeri')->with('success', 'Album dihapus.');
     }
 
     private function saveGalleryMedia(int $albumId): void
@@ -392,33 +364,18 @@ class ContentController extends ProtectedController
             // Fix EXIF orientation before conversion
             $this->fixImageOrientation($tempPath);
             
-            // Convert ke WebP
+            // Convert ke WebP (handle source that is already WEBP)
             $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
             $webpPath = $path . '/' . $webpName;
             
-            try {
-                $image->withFile($tempPath)
-                    ->convert(IMAGETYPE_WEBP)
-                    ->save($webpPath, 85); // Quality 85
-                
-                // Hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                
+            if ($this->convertToWebp($tempPath, $webpPath, $extension)) {
                 $mediaModel->insert([
                     'album_id'   => $albumId,
                     'media_type' => 'foto',
                     'media_path' => 'uploads/gallery/' . $webpName,
                 ]);
-            } catch (\Exception $e) {
-                // Jika konversi gagal, hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                // Skip file yang gagal dikonversi
-                continue;
             }
+            // Skip file yang gagal dikonversi
         }
 
         $videoLinks = $this->request->getPost('video_links');
@@ -682,7 +639,7 @@ class ContentController extends ProtectedController
             $newsModel->delete($id);
         }
 
-        return redirect()->back()->with('success', 'Berita dihapus.');
+        return redirect()->to('/staff/berita')->with('success', 'Berita dihapus.');
     }
 
     private function saveNewsMedia(int $newsId): void
@@ -993,7 +950,7 @@ class ContentController extends ProtectedController
             $projectModel->delete($id);
         }
 
-        return redirect()->back()->with('success', 'Project dihapus.');
+        return redirect()->to('/staff/projects')->with('success', 'Project dihapus.');
     }
 
     private function saveProjectMedia(int $projectId): void
@@ -1344,10 +1301,45 @@ class ContentController extends ProtectedController
                 }
             }
             $model->delete($id);
-            return redirect()->back()->with('success', 'Perangkat desa berhasil dihapus.');
+            return redirect()->to('/staff/perangkat-desa')->with('success', 'Perangkat desa berhasil dihapus.');
         }
 
         return redirect()->back()->with('error', 'Data tidak ditemukan.');
+    }
+
+    /**
+     * Convert image to WebP.
+     * If the source is already WEBP, simply renames the temp file (avoids GD bug
+     * where imagecreatefrom* cannot open a WEBP source).
+     * Returns true on success, false on failure.
+     */
+    private function convertToWebp(string $tempPath, string $webpPath, string $extension): bool
+    {
+        try {
+            if (strtolower($extension) === 'webp') {
+                // Source is already WEBP — GD cannot re-open it via convert().
+                // Simply rename/copy to the destination path.
+                if (!rename($tempPath, $webpPath)) {
+                    copy($tempPath, $webpPath);
+                    @unlink($tempPath);
+                }
+            } else {
+                $image = \Config\Services::image();
+                $image->withFile($tempPath)
+                    ->convert(IMAGETYPE_WEBP)
+                    ->save($webpPath, 85);
+                if (file_exists($tempPath)) {
+                    @unlink($tempPath);
+                }
+            }
+            return true;
+        } catch (\Exception $e) {
+            if (file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
+            log_message('error', 'convertToWebp failed: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
