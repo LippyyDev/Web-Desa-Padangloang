@@ -9,7 +9,16 @@ use CodeIgniter\Config\BaseConfig;
  * choose to use it. The values here will be read in and set as defaults
  * for the site. If needed, they can be overridden on a page-by-page basis.
  *
- * Suggested reference for explanations:
+ * CDN Whitelist hasil audit seluruh Views:
+ * - cdn.jsdelivr.net     : Bootstrap, Bootstrap Icons, SweetAlert2, ApexCharts
+ * - code.jquery.com      : jQuery 3.7.1
+ * - cdn.datatables.net   : DataTables CSS/JS + i18n JSON (XHR)
+ * - cdn.quilljs.com      : Quill Editor (Staff - Berita)
+ * - fonts.googleapis.com : Google Fonts CSS (Poppins) - Guest
+ * - fonts.gstatic.com    : Google Fonts woff2 file server - Guest
+ * - www.google.com       : Google Maps embed iframe - Guest
+ * - www.youtube.com      : YouTube iframe embed via toEmbedUrl() - Guest & Staff
+ * - via.placeholder.com  : Placeholder image fallback - Guest
  *
  * @see https://www.html5rocks.com/en/tutorials/security/content-security-policy/
  */
@@ -20,7 +29,8 @@ class ContentSecurityPolicy extends BaseConfig
     // -------------------------------------------------------------------------
 
     /**
-     * Default CSP report context
+     * Default CSP report context.
+     * Set ke true untuk mode debug (header dikirim tapi tidak diblokir).
      */
     public bool $reportOnly = false;
 
@@ -31,19 +41,17 @@ class ContentSecurityPolicy extends BaseConfig
     public ?string $reportURI = null;
 
     /**
-     * Instructs user agents to rewrite URL schemes, changing
-     * HTTP to HTTPS. This directive is for websites with
-     * large numbers of old URLs that need to be rewritten.
+     * Instructs user agents to rewrite URL schemes,
+     * changing HTTP to HTTPS.
      */
     public bool $upgradeInsecureRequests = false;
 
     // -------------------------------------------------------------------------
     // Sources allowed
-    // NOTE: once you set a policy to 'none', it cannot be further restricted
     // -------------------------------------------------------------------------
 
     /**
-     * Will default to self if not overridden
+     * Will default to self if not overridden.
      *
      * @var list<string>|string|null
      */
@@ -54,33 +62,47 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public $scriptSrc = 'self';
+    public $scriptSrc = [
+        'self',
+        'cdn.jsdelivr.net',    // Bootstrap JS, SweetAlert2, ApexCharts
+        'code.jquery.com',     // jQuery 3.7.1
+        'cdn.datatables.net',  // DataTables JS
+        'cdn.quilljs.com',     // Quill Editor (Staff - Berita)
+    ];
 
     /**
      * Lists allowed stylesheets' URLs.
      *
      * @var list<string>|string
      */
-    public $styleSrc = 'self';
+    public $styleSrc = [
+        'self',
+        'cdn.jsdelivr.net',    // Bootstrap CSS, Bootstrap Icons, SweetAlert2
+        'cdn.datatables.net',  // DataTables CSS
+        'cdn.quilljs.com',     // Quill Editor CSS
+        'fonts.googleapis.com', // Google Fonts CSS (Poppins) - Guest
+    ];
 
     /**
      * Defines the origins from which images can be loaded.
      *
      * @var list<string>|string
      */
-    public $imageSrc = 'self';
+    public $imageSrc = [
+        'self',
+        'data:',               // Inline base64 images
+        'via.placeholder.com', // Placeholder image fallback - Guest
+    ];
 
     /**
      * Restricts the URLs that can appear in a page's `<base>` element.
-     *
-     * Will default to self if not overridden
      *
      * @var list<string>|string|null
      */
     public $baseURI;
 
     /**
-     * Lists the URLs for workers and embedded frame contents
+     * Lists the URLs for workers and embedded frame contents.
      *
      * @var list<string>|string
      */
@@ -92,14 +114,21 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public $connectSrc = 'self';
+    public $connectSrc = [
+        'self',
+        'cdn.datatables.net',  // DataTables i18n JSON (XHR fetch)
+    ];
 
     /**
      * Specifies the origins that can serve web fonts.
      *
      * @var list<string>|string
      */
-    public $fontSrc;
+    public $fontSrc = [
+        'self',
+        'cdn.jsdelivr.net',  // Bootstrap Icons font files
+        'fonts.gstatic.com', // Google Fonts woff2 files - Guest
+    ];
 
     /**
      * Lists valid endpoints for submission from `<form>` tags.
@@ -110,9 +139,6 @@ class ContentSecurityPolicy extends BaseConfig
 
     /**
      * Specifies the sources that can embed the current page.
-     * This directive applies to `<frame>`, `<iframe>`, `<embed>`,
-     * and `<applet>` tags. This directive can't be used in
-     * `<meta>` tags and applies only to non-HTML resources.
      *
      * @var list<string>|string|null
      */
@@ -120,11 +146,14 @@ class ContentSecurityPolicy extends BaseConfig
 
     /**
      * The frame-src directive restricts the URLs which may
-     * be loaded into nested browsing contexts.
+     * be loaded into nested browsing contexts (iframe).
      *
      * @var list<string>|string|null
      */
-    public $frameSrc;
+    public $frameSrc = [
+        'https://www.google.com',  // Google Maps embed iframe - Guest (home, profil)
+        'https://www.youtube.com', // YouTube embed iframe via toEmbedUrl() - Guest & Staff
+    ];
 
     /**
      * Restricts the origins allowed to deliver video and audio.
