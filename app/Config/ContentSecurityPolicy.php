@@ -59,11 +59,14 @@ class ContentSecurityPolicy extends BaseConfig
 
     /**
      * Lists allowed scripts' URLs.
+     * 'unsafe-inline' diperlukan karena semua layout (Admin, Staff, User, Guest)
+     * memiliki inline <script> blocks (SweetAlert2 handler, flash messages, dll).
      *
      * @var list<string>|string
      */
     public $scriptSrc = [
         'self',
+        "'unsafe-inline'",     // Inline <script> blocks di semua layout
         'cdn.jsdelivr.net',    // Bootstrap JS, SweetAlert2, ApexCharts
         'code.jquery.com',     // jQuery 3.7.1
         'cdn.datatables.net',  // DataTables JS
@@ -72,11 +75,14 @@ class ContentSecurityPolicy extends BaseConfig
 
     /**
      * Lists allowed stylesheets' URLs.
+     * 'unsafe-inline' diperlukan karena Guest layout memiliki inline <style>
+     * block yang besar (slide notification CSS).
      *
      * @var list<string>|string
      */
     public $styleSrc = [
         'self',
+        "'unsafe-inline'",      // Inline <style> blocks (Guest layout, dll)
         'cdn.jsdelivr.net',    // Bootstrap CSS, Bootstrap Icons, SweetAlert2
         'cdn.datatables.net',  // DataTables CSS
         'cdn.quilljs.com',     // Quill Editor CSS
@@ -110,13 +116,20 @@ class ContentSecurityPolicy extends BaseConfig
 
     /**
      * Limits the origins that you can connect to (via XHR,
-     * WebSockets, and EventSource).
+     * WebSockets, fetch, preconnect, dan EventSource).
+     * Semua CDN domain dimasukkan untuk mendukung preconnect link
+     * di Guest layout dan request dari Debug Toolbar.
      *
      * @var list<string>|string
      */
     public $connectSrc = [
         'self',
+        'cdn.jsdelivr.net',    // preconnect + XHR dari Debug Toolbar
+        'code.jquery.com',     // preconnect
         'cdn.datatables.net',  // DataTables i18n JSON (XHR fetch)
+        'cdn.quilljs.com',     // preconnect
+        'fonts.googleapis.com', // preconnect di Guest layout
+        'fonts.gstatic.com',   // preconnect di Guest layout
     ];
 
     /**
@@ -199,7 +212,10 @@ class ContentSecurityPolicy extends BaseConfig
     public string $scriptNonceTag = '{csp-script-nonce}';
 
     /**
-     * Replace nonce tag automatically
+     * Replace nonce tag automatically.
+     * NONAKTIF: Ketika nonce aktif, browser mengabaikan 'unsafe-inline'.
+     * Karena semua layout menggunakan inline script & style tanpa nonce,
+     * autoNonce harus dimatikan agar 'unsafe-inline' dihormati browser.
      */
-    public bool $autoNonce = true;
+    public bool $autoNonce = false;
 }

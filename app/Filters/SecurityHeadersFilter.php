@@ -9,11 +9,13 @@ use CodeIgniter\Filters\FilterInterface;
 /**
  * Security Headers Filter
  *
- * Menambahkan security headers yang tidak di-handle oleh CI4's built-in SecureHeaders:
- * - Permissions-Policy
+ * Menambahkan security headers secara manual:
+ * - Content-Security-Policy (manual, tanpa nonce agar 'unsafe-inline' berlaku)
  * - Referrer-Policy
+ * - Permissions-Policy
  *
- * Dijalankan sebagai 'after' filter agar bisa memodifikasi response headers.
+ * Catatan: $CSPEnabled di App.php dibiarkan false karena CI4 selalu inject
+ * nonce ke CSP header-nya, yang menyebabkan 'unsafe-inline' diabaikan browser.
  */
 class SecurityHeadersFilter implements FilterInterface
 {
@@ -31,22 +33,40 @@ class SecurityHeadersFilter implements FilterInterface
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
         // -----------------------------------------------------------------
+        // Content-Security-Policy (manual, tanpa nonce CI4)
+        // Whitelist CDN berdasarkan audit seluruh Views:
+        //   - cdn.jsdelivr.net     : Bootstrap, Bootstrap Icons, SweetAlert2, ApexCharts
+        //   - code.jquery.com      : jQuery 3.7.1
+        //   - cdn.datatables.net   : DataTables CSS/JS + i18n JSON (XHR)
+        //   - cdn.quilljs.com      : Quill Editor (Staff - Berita)
+        //   - fonts.googleapis.com : Google Fonts CSS (Poppins) - Guest
+        //   - fonts.gstatic.com    : Google Fonts woff2 - Guest
+        //   - www.google.com       : Google Maps iframe - Guest
+        //   - www.youtube.com      : YouTube iframe embed - Guest & Staff
+        //   - via.placeholder.com  : Placeholder image fallback - Guest
+        // -----------------------------------------------------------------
+        $csp = implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net code.jquery.com cdn.datatables.net cdn.quilljs.com www.gstatic.com apis.google.com",
+            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdn.datatables.net cdn.quilljs.com fonts.googleapis.com",
+            "font-src 'self' cdn.jsdelivr.net fonts.gstatic.com",
+            "img-src 'self' data: via.placeholder.com i.ytimg.com",
+            "frame-src https://www.google.com https://www.youtube.com https://*.firebaseapp.com",
+            "connect-src 'self' cdn.jsdelivr.net code.jquery.com cdn.datatables.net cdn.quilljs.com fonts.googleapis.com fonts.gstatic.com www.gstatic.com apis.google.com identitytoolkit.googleapis.com securetoken.googleapis.com",
+            "form-action 'self'",
+            "object-src 'self'",
+            "base-uri 'self'",
+        ]);
+
+        $response->setHeader('Content-Security-Policy', $csp);
+
+        // -----------------------------------------------------------------
         // Referrer-Policy
-        // 'strict-origin-when-cross-origin': kirim full URL untuk same-origin,
-        // hanya origin untuk cross-origin HTTPS, tidak ada untuk HTTP.
         // -----------------------------------------------------------------
         $response->setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
         // -----------------------------------------------------------------
         // Permissions-Policy
-        // Membatasi akses ke browser features yang tidak dibutuhkan web desa.
-        // - camera=()           : tidak ada akses kamera
-        // - microphone=()       : tidak ada akses mikrofon
-        // - geolocation=()      : tidak ada akses lokasi (maps pakai iframe, bukan API)
-        // - payment=()          : tidak ada payment API
-        // - usb=()              : tidak ada akses USB
-        // - fullscreen=(self)   : fullscreen hanya dari domain sendiri (YouTube iframe pakai sendiri)
-        // - autoplay=(self)     : autoplay hanya dari domain sendiri
         // -----------------------------------------------------------------
         $response->setHeader('Permissions-Policy',
             'camera=(), microphone=(), geolocation=(), payment=(), usb=(), ' .
