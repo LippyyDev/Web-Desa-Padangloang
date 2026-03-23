@@ -293,7 +293,7 @@
         <div class="news-content-card">
             <img src="<?= $item['thumbnail'] ? base_url($item['thumbnail']) : 'https://via.placeholder.com/900x420?text=Berita' ?>" class="news-thumbnail" alt="<?= esc($item['judul']) ?>">
             <article class="news-article">
-                <?= $item['isi'] ?>
+                <?= purify_html($item['isi']) ?>
             </article>
         </div>
 

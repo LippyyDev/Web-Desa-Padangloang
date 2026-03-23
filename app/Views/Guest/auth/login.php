@@ -20,7 +20,7 @@
                 
                 <div class="mb-4">
                     <label class="auth-form-label">Email atau Username</label>
-                    <input type="text" class="auth-form-control" name="identity" value="<?= old('identity') ?>" placeholder="contoh@email.com" required>
+                    <input type="text" class="auth-form-control" name="identity" value="<?= old('identity') ?>" placeholder="contoh@email.com" required <?= !empty($isLocked) ? 'disabled' : '' ?>>
                 </div>
                 
                 <div class="mb-4">
@@ -29,14 +29,14 @@
                         <a href="<?= base_url('/forgot-password') ?>" class="auth-link small">Lupa password?</a>
                     </div>
                     <div class="password-wrapper">
-                        <input type="password" class="auth-form-control" name="password" placeholder="••••••••" required>
+                        <input type="password" class="auth-form-control" name="password" placeholder="••••••••" required <?= !empty($isLocked) ? 'disabled' : '' ?>>
                         <button type="button" class="password-toggle">
                             <i class="bi bi-eye-slash"></i>
                         </button>
                     </div>
                 </div>
 
-                <button class="btn-auth-primary mb-4" type="submit">Masuk Sekarang</button>
+                <button class="btn-auth-primary mb-4" type="submit" <?= !empty($isLocked) ? 'disabled style="opacity:0.5;background:#6b7280;cursor:not-allowed;pointer-events:none;"' : '' ?>>Masuk Sekarang</button>
             </form>
             
             <div class="auth-divider">

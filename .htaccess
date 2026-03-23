@@ -1,0 +1,16 @@
+# ----------------------------------------------------------------------
+# Root-level protection — deny web access to all files
+# The web server document root should point to the /public directory.
+# This file is a safety net in case the server is misconfigured.
+# ----------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Redirect all requests to /public
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public/$1 [L,QSA]
+</IfModule>
+
+# Block direct access to sensitive files regardless of document root config
+<FilesMatch "(^\.env$|\.env\.|composer\.(json|lock)|package\.(json|lock)|\.htpasswd|Dockerfile|docker-compose\.yml)">
+    Require all denied
+</FilesMatch>

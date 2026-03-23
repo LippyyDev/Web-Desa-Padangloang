@@ -96,7 +96,7 @@
                     </h2>
                     
                     <p class="section-description">
-                        <?= $desaProfile['deskripsi_lokasi'] ?? 'Padangloang adalah desa yang terus bergerak maju, menjunjung tinggi nilai gotong royong, transparansi, dan inovasi untuk kesejahteraan masyarakat.' ?>
+                        <?= esc($desaProfile['deskripsi_lokasi'] ?? 'Padangloang adalah desa yang terus bergerak maju, menjunjung tinggi nilai gotong royong, transparansi, dan inovasi untuk kesejahteraan masyarakat.') ?>
                     </p>
                     
                     <div class="visi-misi-wrapper">
@@ -106,7 +106,7 @@
                             </div>
                             <div class="vm-content">
                                 <h6>Visi Utama</h6>
-                                <p><?= $desaProfile['visi'] ?: 'Menjadi desa mandiri yang berdaya saing dan sejahtera.' ?></p>
+                                <p><?= esc($desaProfile['visi'] ?: 'Menjadi desa mandiri yang berdaya saing dan sejahtera.') ?></p>
                             </div>
                         </div>
                         
@@ -116,7 +116,7 @@
                             </div>
                             <div class="vm-content">
                                 <h6>Misi Kami</h6>
-                                <p><?= $desaProfile['misi'] ?: 'Meningkatkan pelayanan publik dan pemberdayaan masyarakat.' ?></p>
+                                <p><?= esc($desaProfile['misi'] ?: 'Meningkatkan pelayanan publik dan pemberdayaan masyarakat.') ?>
                             </div>
                         </div>
                     </div>

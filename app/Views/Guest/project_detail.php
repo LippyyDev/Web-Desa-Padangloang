@@ -324,7 +324,7 @@
         <div class="news-content-card">
             <img src="<?= $item['thumbnail'] ? base_url($item['thumbnail']) : 'https://via.placeholder.com/900x420?text=Project' ?>" class="news-thumbnail" alt="<?= esc($item['judul']) ?>">
             <article class="news-article">
-                <?= nl2br($item['deskripsi']) ?>
+                <?= purify_html($item['deskripsi']) ?>
             </article>
         </div>
 

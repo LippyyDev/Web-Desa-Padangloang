@@ -46,20 +46,25 @@
                     <label class="auth-form-label">Kode OTP</label>
                     <input type="text" class="auth-form-control text-center text-uppercase" name="otp" maxlength="6" placeholder="XXXXXX" required style="letter-spacing: 4px; font-size: 1.2rem;">
                     <div class="text-end mt-2">
-                        <button type="button" class="btn btn-link p-0 text-decoration-none small" id="btnResendOtp" disabled style="font-size: 0.85rem; color: #64748b;">
-                            Kirim ulang dalam <span id="otpCountdown">60</span>s
+                        <button type="button" class="btn btn-link p-0 text-decoration-none small" id="btnResendOtp" style="font-size: 0.85rem; color: #3b82f6;">
+                            Kirim Ulang OTP
                         </button>
                     </div>
                 </div>
 
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="auth-form-label">Password Baru</label>
                     <div class="password-wrapper">
-                        <input type="password" class="auth-form-control" name="password" placeholder="••••••••" required>
+                        <input type="password" class="auth-form-control" id="newPassword" name="password" placeholder="••••••••" required oninput="checkPasswordStrength(this.value)">
                         <button type="button" class="password-toggle">
                             <i class="bi bi-eye-slash"></i>
                         </button>
                     </div>
+                    <!-- Password strength indicator -->
+                    <div id="pwStrengthBar" style="height:4px;border-radius:2px;margin-top:6px;background:#1e293b;overflow:hidden;">
+                        <div id="pwStrengthFill" style="height:100%;width:0%;border-radius:2px;transition:width .3s,background .3s;"></div>
+                    </div>
+                    <small id="pwStrengthText" class="d-block mt-1" style="font-size:0.78rem;color:#64748b;">Minimal 8 karakter, mengandung huruf &amp; angka</small>
                 </div>
 
                 <button class="btn-auth-primary mb-4" type="submit">Reset Password</button>
@@ -77,39 +82,66 @@
 <script src="<?= base_url('assets/js/guest/auth-background.js') ?>"></script>
 <script src="<?= base_url('assets/js/guest/password-toggle.js') ?>"></script>
 <script>
+// --- Password Strength Checker ---
+function checkPasswordStrength(val) {
+    const fill = document.getElementById('pwStrengthFill');
+    const text = document.getElementById('pwStrengthText');
+    if (!fill || !text) return;
+
+    const hasLetter = /[A-Za-z]/.test(val);
+    const hasNumber = /[0-9]/.test(val);
+    const hasSpecial = /[^A-Za-z0-9]/.test(val);
+    const len = val.length;
+
+    let score = 0;
+    if (len >= 8) score++;
+    if (len >= 12) score++;
+    if (hasLetter && hasNumber) score++;
+    if (hasSpecial) score++;
+
+    const levels = [
+        { pct: '0%',   color: '#1e293b', label: 'Minimal 8 karakter, mengandung huruf &amp; angka' },
+        { pct: '25%',  color: '#ef4444', label: 'Terlalu lemah' },
+        { pct: '50%',  color: '#f97316', label: 'Lemah — tambahkan angka' },
+        { pct: '75%',  color: '#eab308', label: 'Sedang' },
+        { pct: '100%', color: '#22c55e', label: 'Kuat ✓' },
+    ];
+
+    const level = len === 0 ? levels[0] : levels[Math.min(score, 4)];
+    fill.style.width  = level.pct;
+    fill.style.background = level.color;
+    text.innerHTML = level.label;
+    text.style.color = len === 0 ? '#64748b' : level.color;
+}
+
+// --- OTP Resend Logic ---
 document.addEventListener('DOMContentLoaded', function() {
-    let countdown = 60;
     const btnResend = document.getElementById('btnResendOtp');
-    const countdownSpan = document.getElementById('otpCountdown');
     let timer;
+    let resendCount = 0; // 0 = first click has no cooldown
 
-    // Start countdown immediately
-    startTimer();
-
-    function startTimer() {
+    function startCooldown(seconds) {
         btnResend.disabled = true;
         btnResend.style.color = '#64748b';
-        countdown = 60;
-        countdownSpan.textContent = countdown;
-        btnResend.innerHTML = `Kirim ulang dalam <span id="otpCountdown">${countdown}</span>s`;
-        
+        let remaining = seconds;
+        btnResend.innerHTML = `Kirim ulang dalam <span>${remaining}</span>s`;
+
         clearInterval(timer);
         timer = setInterval(() => {
-            countdown--;
-            document.getElementById('otpCountdown').textContent = countdown;
-            
-            if (countdown <= 0) {
+            remaining--;
+            btnResend.innerHTML = `Kirim ulang dalam <span>${remaining}</span>s`;
+            if (remaining <= 0) {
                 clearInterval(timer);
                 btnResend.disabled = false;
-                btnResend.style.color = '#3b82f6'; // Blue color
+                btnResend.style.color = '#3b82f6';
                 btnResend.innerHTML = 'Kirim Ulang OTP';
             }
         }, 1000);
     }
 
     btnResend.addEventListener('click', function() {
-        if(btnResend.disabled) return;
-        
+        if (btnResend.disabled) return;
+
         btnResend.disabled = true;
         btnResend.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mengirim...';
 
@@ -123,18 +155,26 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                resendCount = data.resend_count ?? (resendCount + 1);
                 alert(data.message);
-                startTimer();
+                // From 2nd resend onwards, apply 90s cooldown
+                startCooldown(90);
             } else {
                 alert(data.message);
-                btnResend.disabled = false;
-                btnResend.innerHTML = 'Kirim Ulang OTP';
+                // If server says wait, apply the remaining time
+                if (data.wait) {
+                    startCooldown(data.wait);
+                } else {
+                    btnResend.disabled = false;
+                    btnResend.style.color = '#3b82f6';
+                    btnResend.innerHTML = 'Kirim Ulang OTP';
+                }
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
+        .catch(() => {
             alert('Terjadi kesalahan koneksi.');
             btnResend.disabled = false;
+            btnResend.style.color = '#3b82f6';
             btnResend.innerHTML = 'Kirim Ulang OTP';
         });
     });

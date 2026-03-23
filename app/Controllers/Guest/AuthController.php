@@ -4,6 +4,7 @@ namespace App\Controllers\Guest;
 
 use App\Controllers\BaseController;
 use App\Libraries\EmailService;
+use App\Libraries\FirebaseTokenVerifier;
 use App\Models\UserModel;
 use App\Models\UserProfileModel;
 
@@ -20,11 +21,32 @@ class AuthController extends BaseController
             return redirect()->to('/dashboard');
         }
 
-        return view('Guest/auth/login', ['hideFooter' => true, 'hideNavbar' => true]);
+        // Check if IP is currently locked out for rate limiting
+        $cache = \Config\Services::cache();
+        $lockKey = 'login_lock_' . md5($this->request->getIPAddress());
+        $isLocked = (bool) $cache->get($lockKey);
+
+        return view('Guest/auth/login', [
+            'hideFooter' => true,
+            'hideNavbar' => true,
+            'isLocked'   => $isLocked,
+        ]);
     }
 
     public function doLogin()
     {
+        // --- H3: Rate Limiting — 3 failed attempts per IP, 5 minute lockout ---
+        $cache = \Config\Services::cache();
+        $ipAddress = $this->request->getIPAddress();
+        $throttleKey = 'login_fail_' . md5($ipAddress);
+        $lockKey     = 'login_lock_' . md5($ipAddress);
+
+        // Check if this IP is currently locked out
+        if ($cache->get($lockKey)) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Terlalu banyak percobaan login. Silakan coba lagi dalam 5 menit.');
+        }
+
         $identity = trim($this->request->getPost('identity'));
         $password = $this->request->getPost('password');
 
@@ -34,7 +56,22 @@ class AuthController extends BaseController
             ->first();
 
         if (!$user || !password_verify($password, $user['password_hash'])) {
-            return redirect()->back()->withInput()->with('error', 'Kredensial tidak valid.');
+            // Login failed — increment fail counter
+            $failCount = (int) ($cache->get($throttleKey) ?? 0);
+            $failCount++;
+
+            if ($failCount >= 3) {
+                // Lock out this IP for 5 minutes (300 seconds)
+                $cache->save($lockKey, true, 300);
+                $cache->delete($throttleKey);
+                return redirect()->back()->withInput()
+                    ->with('error', 'Terlalu banyak percobaan login. Silakan coba lagi dalam 5 menit.');
+            }
+
+            // Save updated fail count (expires in 5 minutes)
+            $cache->save($throttleKey, $failCount, 300);
+            return redirect()->back()->withInput()
+                ->with('error', 'Kredensial tidak valid.');
         }
 
         if ($user['status'] !== 'aktif') {
@@ -44,6 +81,10 @@ class AuthController extends BaseController
         if (!(bool) $user['is_verified']) {
             return redirect()->back()->with('error', 'Akun belum terverifikasi. Silakan login menggunakan opsi Google dengan email yang sama.');
         }
+
+        // Successful login — clear rate limit counter
+        $cache->delete($throttleKey);
+        $cache->delete($lockKey);
 
         session()->set('user', [
             'id'       => $user['id'],
@@ -82,12 +123,13 @@ class AuthController extends BaseController
         
         // Simpan data reset di session
         $resetData = [
-            'user_id'     => $user['id'],
-            'email'       => $user['email'],
-            'username'    => $user['username'],
-            'otp'         => $otp,
-            'expires_at'  => date('Y-m-d H:i:s', strtotime('+1 hour')),
-            'otp_sent_at' => time(), // Untuk cooldown
+            'user_id'      => $user['id'],
+            'email'        => $user['email'],
+            'username'     => $user['username'],
+            'otp'          => $otp,
+            'expires_at'   => date('Y-m-d H:i:s', strtotime('+1 hour')),
+            'otp_sent_at'  => time(),
+            'resend_count' => 0, // Track how many times OTP has been resent
         ];
         session()->set('pending_password_reset', $resetData);
         
@@ -130,14 +172,16 @@ class AuthController extends BaseController
             ]);
         }
 
-        // Cek cooldown (60 detik)
-        $lastSent = $resetData['otp_sent_at'] ?? 0;
-        $diff = time() - $lastSent;
-        
-        if ($diff < 60) {
+        $resendCount = (int) ($resetData['resend_count'] ?? 0);
+        $lastSent    = $resetData['otp_sent_at'] ?? 0;
+        $diff        = time() - $lastSent;
+
+        // 1st resend: no cooldown. 2nd resend onwards: 90 second cooldown.
+        if ($resendCount >= 1 && $diff < 90) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Silakan tunggu ' . (60 - $diff) . ' detik lagi.'
+                'message' => 'Silakan tunggu ' . (90 - $diff) . ' detik lagi.',
+                'wait'    => 90 - $diff,
             ]);
         }
 
@@ -145,9 +189,10 @@ class AuthController extends BaseController
         $otp = $this->generateOtp();
         
         // Update session
-        $resetData['otp'] = $otp;
-        $resetData['otp_sent_at'] = time();
-        $resetData['expires_at'] = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        $resetData['otp']          = $otp;
+        $resetData['otp_sent_at']  = time();
+        $resetData['expires_at']   = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        $resetData['resend_count'] = $resendCount + 1;
         
         session()->set('pending_password_reset', $resetData);
 
@@ -157,10 +202,14 @@ class AuthController extends BaseController
 
         if ($emailSent) {
             return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Kode OTP baru telah dikirim ke email Anda.'
+                'success'      => true,
+                'message'      => 'Kode OTP baru telah dikirim ke email Anda.',
+                'resend_count' => $resetData['resend_count'],
             ]);
         } else {
+            // Rollback count on failure
+            $resetData['resend_count'] = $resendCount;
+            session()->set('pending_password_reset', $resetData);
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Gagal mengirim email. Silakan coba lagi.'
@@ -174,7 +223,7 @@ class AuthController extends BaseController
         $otp      = trim($this->request->getPost('otp'));
         $password = $this->request->getPost('password');
 
-        // Ambil data reset dari session (tidak perlu tabel)
+        // Ambil data reset dari session
         $resetData = session()->get('pending_password_reset');
 
         if (!$resetData) {
@@ -195,6 +244,14 @@ class AuthController extends BaseController
         if (strtotime($resetData['expires_at']) < time()) {
             session()->remove('pending_password_reset');
             return redirect()->to('/forgot-password')->with('error', 'Kode OTP sudah kadaluarsa. Silakan request reset password lagi.');
+        }
+
+        // --- M1: Validasi kekuatan password ---
+        if (strlen($password) < 8) {
+            return redirect()->back()->with('error', 'Password minimal 8 karakter.');
+        }
+        if (!preg_match('/[A-Za-z]/', $password) || !preg_match('/[0-9]/', $password)) {
+            return redirect()->back()->with('error', 'Password harus mengandung minimal 1 huruf dan 1 angka.');
         }
 
         // Update password
@@ -233,39 +290,16 @@ class AuthController extends BaseController
             ])->setStatusCode(400);
         }
 
-        // Verify Firebase ID token
-        // Note: For production, consider using Firebase Admin SDK for proper token verification
+        // --- H1: Verify Firebase ID token using Google public keys ---
         try {
-            // Decode the JWT token
-            $tokenParts = explode('.', $idToken);
-            if (count($tokenParts) !== 3) {
-                throw new \Exception('Invalid token format');
-            }
-            
-            // Decode base64url encoded payload
-            $payloadEncoded = str_replace(['-', '_'], ['+', '/'], $tokenParts[1]);
-            // Add padding if needed
-            $padding = strlen($payloadEncoded) % 4;
-            if ($padding) {
-                $payloadEncoded .= str_repeat('=', 4 - $padding);
-            }
-            
-            $payload = json_decode(base64_decode($payloadEncoded), true);
-            
-            if (!$payload) {
-                throw new \Exception('Invalid token payload');
-            }
+            $verifier = new FirebaseTokenVerifier('webpadangloang');
+            $decoded  = $verifier->verify($idToken);
 
-            // Verify token is not expired
-            if (isset($payload['exp']) && $payload['exp'] < time()) {
-                throw new \Exception('Token expired');
-            }
-
-            // Extract user information from token
-            $firebaseUid = $payload['user_id'] ?? $payload['sub'] ?? null;
-            $email = $payload['email'] ?? null;
-            $name = $payload['name'] ?? null;
-            $emailVerified = $payload['email_verified'] ?? false;
+            // Extract user information from verified token
+            $firebaseUid   = $decoded->sub;
+            $email         = $decoded->email ?? null;
+            $name          = $decoded->name ?? null;
+            $emailVerified = $decoded->email_verified ?? false;
 
             if (!$firebaseUid || !$email) {
                 throw new \Exception('Missing required user information');
@@ -353,7 +387,7 @@ class AuthController extends BaseController
                         'password_hash' => '', // Empty password for Google users
                         'role'          => 'user',
                         'status'        => 'aktif',
-                        'is_verified'   => $emailVerified ? 1 : 1, // Google accounts are considered verified
+                        'is_verified'   => 1, // Google accounts are considered verified
                     ], true);
 
                     // Create profile
@@ -380,9 +414,10 @@ class AuthController extends BaseController
                 }
             }
         } catch (\Exception $e) {
+            log_message('error', 'Firebase auth failed: ' . $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Autentikasi gagal: ' . $e->getMessage()
+                'message' => 'Autentikasi gagal. Silakan coba lagi.'
             ])->setStatusCode(400);
         }
     }

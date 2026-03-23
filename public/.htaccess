@@ -2,6 +2,14 @@
 Options -Indexes
 
 # ----------------------------------------------------------------------
+# Block access to sensitive files (safety net if document root is misconfigured)
+# ----------------------------------------------------------------------
+<FilesMatch "^\.env|\.env\.|composer\.(json|lock)|package\.json|\.htpasswd|\.git">
+    Require all denied
+</FilesMatch>
+
+
+# ----------------------------------------------------------------------
 # Rewrite engine
 # ----------------------------------------------------------------------
 

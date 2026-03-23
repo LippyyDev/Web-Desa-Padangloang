@@ -49,7 +49,7 @@
                         <h3 class="fw-bold mb-0 fs-5 fs-md-3">Visi Desa</h3>
                     </div>
                     <p class="text-muted mb-0 small" style="line-height: 1.6;">
-                        <?= $desaProfile['visi'] ?: 'Menjadi desa mandiri, inovatif, dan sejahtera dengan berlandaskan nilai-nilai gotong royong.' ?>
+                        <?= esc($desaProfile['visi'] ?: 'Menjadi desa mandiri, inovatif, dan sejahtera dengan berlandaskan nilai-nilai gotong royong.') ?>
                     </p>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                         <h3 class="fw-bold mb-0 fs-5 fs-md-3">Misi Desa</h3>
                     </div>
                     <div class="text-muted small" style="line-height: 1.6;">
-                        <?= nl2br($desaProfile['misi'] ?: "Meningkatkan pelayanan publik\nMendorong ekonomi kreatif\nMenguatkan kolaborasi warga") ?>
+                        <?= nl2br(esc($desaProfile['misi'] ?: "Meningkatkan pelayanan publik\nMendorong ekonomi kreatif\nMenguatkan kolaborasi warga")) ?>
                     </div>
                 </div>
             </div>
@@ -199,7 +199,7 @@
                             </div>
                             <div class="ms-3">
                                 <h6 class="fw-bold mb-1">Whatsapp</h6>
-                                <p class="text-muted mb-0"><?= $desaProfile['kontak_wa'] ?: '-' ?></p>
+                                <p class="text-muted mb-0"><?= esc($desaProfile['kontak_wa'] ?: '-') ?></p>
                             </div>
                         </div>
 
@@ -211,7 +211,7 @@
                             </div>
                             <div class="ms-3">
                                 <h6 class="fw-bold mb-1">Email</h6>
-                                <p class="text-muted mb-0"><?= $desaProfile['kontak_email'] ?: '-' ?></p>
+                                <p class="text-muted mb-0"><?= esc($desaProfile['kontak_email'] ?: '-') ?></p>
                             </div>
                         </div>
 
@@ -223,7 +223,7 @@
                             </div>
                             <div class="ms-3">
                                 <h6 class="fw-bold mb-1">Alamat Kantor</h6>
-                                <p class="text-muted mb-0"><?= $desaProfile['alamat_kantor'] ?: '-' ?></p>
+                                <p class="text-muted mb-0"><?= esc($desaProfile['alamat_kantor'] ?: '-') ?></p>
                             </div>
                         </div>
                     </div>

@@ -25,7 +25,7 @@ abstract class BaseController extends Controller
      *
      * @var array
      */
-    protected $helpers = ['url', 'form', 'text'];
+    protected $helpers = ['url', 'form', 'text', 'htmlpurifier'];
 
     /**
      * Session service instance.
