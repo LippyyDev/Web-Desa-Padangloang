@@ -406,6 +406,17 @@ if (acceptBtn) {
     acceptBtn.addEventListener('click', async function(e) {
         e.preventDefault();
         
+        const replyText = document.getElementById('replyTextInput')?.value.trim();
+        if (!replyText) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Isi Balasan Kosong',
+                text: 'Harap tulis isi balasan terlebih dahulu sebelum menerima surat.',
+                confirmButtonColor: '#0d6efd'
+            });
+            return;
+        }
+        
         const result = await Swal.fire({
             title: 'Konfirmasi Penerimaan',
             text: 'Yakin ingin menerima surat ini?',
@@ -428,6 +439,17 @@ const rejectBtn = document.querySelector('.btn-action-reject');
 if (rejectBtn) {
     rejectBtn.addEventListener('click', async function(e) {
         e.preventDefault();
+        
+        const replyText = document.getElementById('replyTextInput')?.value.trim();
+        if (!replyText) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Isi Balasan Kosong',
+                text: 'Harap tulis isi balasan terlebih dahulu sebelum menolak surat.',
+                confirmButtonColor: '#0d6efd'
+            });
+            return;
+        }
         
         const result = await Swal.fire({
             title: 'Konfirmasi Penolakan',

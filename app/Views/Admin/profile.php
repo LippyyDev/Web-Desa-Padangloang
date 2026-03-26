@@ -44,7 +44,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tempat Lahir</label>
-                    <input type="text" class="form-control" name="tempat_lahir" value="<?= old('tempat_lahir', $profile['tempat_lahir'] ?? '') ?>">
+                    <input type="text" class="form-control input-no-numbers" name="tempat_lahir" value="<?= old('tempat_lahir', $profile['tempat_lahir'] ?? '') ?>" placeholder="Hanya huruf dan simbol">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Lahir</label>
@@ -102,15 +102,30 @@
             <div class="row g-3">
                 <div class="col-md-12">
                     <label class="form-label">Masukkan Password Lama</label>
-                    <input type="password" class="form-control" name="old_password" required>
+                    <div class="input-group password-group">
+                        <input type="password" class="form-control" name="old_password" required>
+                        <button class="btn btn-outline-secondary btn-toggle-pass" type="button">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Masukkan Password Baru</label>
-                    <input type="password" class="form-control" name="new_password" required>
+                    <div class="input-group password-group">
+                        <input type="password" class="form-control" name="new_password" required>
+                        <button class="btn btn-outline-secondary btn-toggle-pass" type="button">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Konfirmasi Password Baru</label>
-                    <input type="password" class="form-control" name="confirm_password" required>
+                    <div class="input-group password-group">
+                        <input type="password" class="form-control" name="confirm_password" required>
+                        <button class="btn btn-outline-secondary btn-toggle-pass" type="button">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="mt-4">
@@ -153,6 +168,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Hanya boleh huruf dan simbol (tanpa angka) untuk tempat lahir
+    document.querySelectorAll('.input-no-numbers').forEach(function(el) {
+        el.addEventListener('input', function() {
+            this.value = this.value.replace(/[0-9]/g, '');
+        });
+        el.addEventListener('keypress', function(e) {
+            if (/[0-9]/.test(e.key)) e.preventDefault();
+        });
+    });
+
     // Hanya boleh angka untuk NIK, maksimal 16 digit
     document.querySelectorAll('.input-digits-only').forEach(function(el) {
         el.addEventListener('input', function() {
@@ -160,6 +185,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         el.addEventListener('keypress', function(e) {
             if (!/[0-9]/.test(e.key)) e.preventDefault();
+        });
+    });
+
+    // Toggle Password Visibility
+    document.querySelectorAll('.btn-toggle-pass').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
         });
     });
 });

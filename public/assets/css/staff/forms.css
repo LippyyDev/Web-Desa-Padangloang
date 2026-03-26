@@ -1,4 +1,4 @@
-﻿/* =========================================
+/* =========================================
    FORMS - form-control, form-select, form-label, input-group
    ========================================= */
 
@@ -41,5 +41,31 @@
 
 .input-group .form-control:focus {
   border-left: 2px solid #2563eb;
+}
+
+/* Password Group Override */
+.input-group.password-group .form-control {
+  border-left: 2px solid #e9ecef;
+  border-radius: 10px 0 0 10px;
+}
+.input-group.password-group .form-control:focus {
+  border-left-color: #2563eb;
+}
+.input-group.password-group .btn-toggle-pass {
+  border-radius: 0 10px 10px 0;
+  border: 2px solid #e9ecef;
+  border-left: none;
+  background: #f8f9fa;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.input-group.password-group .btn-toggle-pass:hover,
+.input-group.password-group .btn-toggle-pass:focus {
+  background: #e9ecef;
+  color: #495057;
+  border-color: #e9ecef;
+  box-shadow: none;
 }
 

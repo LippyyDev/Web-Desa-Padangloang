@@ -206,7 +206,7 @@ class LetterController extends ProtectedController
                     $user['email'],
                     $user['username'],
                     'Surat Anda telah dibaca',
-                    'Surat Anda: ' . $letter['judul_perihal'] . ' telah dibaca oleh ' . $staffName,
+                    'Surat Anda: ' . htmlspecialchars($letter['judul_perihal']) . ' telah dibaca oleh ' . htmlspecialchars($staffName),
                     'letter_read',
                     $letterUrl,
                     $letter['judul_perihal'],
@@ -265,6 +265,14 @@ class LetterController extends ProtectedController
         $action = $this->request->getPost('action');
         $replyText = $this->request->getPost('reply_text');
 
+        // Validasi isi balasan SEBELUM mengubah status surat
+        if (empty(trim((string)$replyText))) {
+            return redirect()->back()->withInput()->with('error', 'Isi balasan wajib diisi sebelum menerima atau menolak surat.');
+        }
+        if (strlen($replyText) > 1850) {
+            return redirect()->back()->withInput()->with('error', 'Isi balasan maksimal 1850 karakter.');
+        }
+
         // Logic for Initial Decision (Menunggu/Dibaca)
         if (in_array($letter['status'], ['Menunggu', 'Dibaca'])) {
             if ($action === 'accept') {
@@ -314,11 +322,6 @@ class LetterController extends ProtectedController
             return redirect()->to('/staff/surat/' . $id)->with('error', 'Surat yang ditolak tidak dapat dibalas lagi.');
         }
 
-        // M6: Validasi panjang reply_text
-        if (!$this->validate(['reply_text' => 'required|max_length[5000]'])) {
-            return redirect()->back()->withInput()->with('error', 'Isi balasan wajib diisi dan maksimal 5000 karakter.');
-        }
-
         // Save the reply
         $replyModel  = new LetterReplyModel();
         $replyId     = $replyModel->insert([
@@ -358,7 +361,7 @@ class LetterController extends ProtectedController
                 $user['email'],
                 $user['username'],
                 $emailSubject,
-                $notifTitle . ' oleh ' . $staffName . "<br><br>Isi Balasan:<br>" . nl2br($replyText),
+                htmlspecialchars($notifTitle) . ' oleh ' . htmlspecialchars($staffName) . "<br><br>Isi Balasan:<br>" . nl2br(htmlspecialchars($replyText)),
                 $notifType,
                 $letterUrl,
                 $letter['judul_perihal'],

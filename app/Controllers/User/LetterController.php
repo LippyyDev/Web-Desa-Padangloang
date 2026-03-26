@@ -221,7 +221,7 @@ class LetterController extends ProtectedController
                 $staff['email'],
                 $staff['username'],
                 'Surat Baru Masuk',
-                'Surat baru dari ' . $userName,
+                'Surat baru dari ' . htmlspecialchars($userName),
                 'new_letter',
                 $letterUrl,
                 $data['judul_perihal'],
