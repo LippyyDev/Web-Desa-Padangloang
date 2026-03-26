@@ -41,7 +41,7 @@
         <div class="text-muted mb-3"><?= esc($letter['judul_perihal']) ?></div>
         
         <div class="small text-muted mb-2">Isi Surat</div>
-        <div class="text-muted"><?= nl2br($letter['isi_surat']) ?></div>
+        <div class="text-muted"><?= nl2br(esc($letter['isi_surat'])) ?></div>
 
         <div class="small text-muted mt-3 mb-2">Status Surat</div>
         <div>
@@ -104,7 +104,7 @@
                                 <div class="small text-muted"><?= date('d M Y H:i', strtotime($reply['created_at'])) ?> WITA</div>
                             </div>
                         </div>
-                        <div class="text-muted mb-2"><?= nl2br($reply['reply_text']) ?></div>
+                        <div class="text-muted mb-2"><?= nl2br(esc($reply['reply_text'])) ?></div>
                         <?php if (!empty($replyAttachments[$reply['id']])): ?>
                             <div class="small mt-2">Lampiran:
                                 <ol class="ps-3 mb-0 mt-1">

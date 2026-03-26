@@ -470,7 +470,16 @@ class PdfWordController extends ProtectedController
         $tipeSurat = $this->request->getPost('tipe_surat');
         $isiSurat = $this->request->getPost('isi_surat');
 
-        if (empty($tipeSurat) || empty($isiSurat)) {
+        // H2: Validasi whitelist tipe surat
+        $allowedTypes = [
+            'Keterangan Usaha', 'Keterangan Tidak Mampu', 'Keterangan Belum Menikah',
+            'Keterangan Domisili', 'Undangan', 'Lain Lain',
+        ];
+        if (!in_array($tipeSurat, $allowedTypes)) {
+            return $this->response->setJSON(['error' => 'Jenis surat tidak valid.'])->setStatusCode(400);
+        }
+
+        if (empty($isiSurat)) {
             return $this->response->setJSON(['error' => 'Tipe surat dan isi surat harus diisi'])->setStatusCode(400);
         }
 
@@ -693,7 +702,16 @@ class PdfWordController extends ProtectedController
         $tipeSurat = $this->request->getPost('tipe_surat');
         $isiSurat = $this->request->getPost('isi_surat');
 
-        if (empty($tipeSurat) || empty($isiSurat)) {
+        // H2: Validasi whitelist tipe surat
+        $allowedTypes = [
+            'Keterangan Usaha', 'Keterangan Tidak Mampu', 'Keterangan Belum Menikah',
+            'Keterangan Domisili', 'Undangan', 'Lain Lain',
+        ];
+        if (!in_array($tipeSurat, $allowedTypes)) {
+            return $this->response->setJSON(['error' => 'Jenis surat tidak valid.'])->setStatusCode(400);
+        }
+
+        if (empty($isiSurat)) {
             return $this->response->setJSON(['error' => 'Tipe surat dan isi surat harus diisi'])->setStatusCode(400);
         }
 
