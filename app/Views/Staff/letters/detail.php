@@ -48,7 +48,7 @@
         <div class="text-muted mb-3"><?= esc($letter['judul_perihal']) ?></div>
 
         <div class="small text-muted mb-2">Isi Surat</div>
-        <div class="text-muted"><?= nl2br($letter['isi_surat']) ?></div>
+        <div class="text-muted"><?= nl2br(esc($letter['isi_surat'])) ?></div>
 
         <div class="small text-muted mt-3 mb-2">Status Surat</div>
         <div>
@@ -178,15 +178,21 @@
                             </div>
                             <?php if ($reply['staff_id'] == $currentStaffId): ?>
                             <div>
-                                <a href="<?= base_url('/staff/surat/' . $letter['id'] . '/balasan/' . $reply['id'] . '/hapus') ?>" 
-                                   class="btn btn-sm btn-outline-danger delete-reply-btn" 
-                                   data-message="Yakin ingin menghapus balasan ini?">
-                                    <i class="bi bi-trash"></i> Hapus
-                                </a>
+                                <!-- H2: POST form + CSRF untuk hapus reply (bukan GET link) -->
+                                <form method="post"
+                                      action="<?= base_url('/staff/surat/' . $letter['id'] . '/balasan/' . $reply['id'] . '/hapus') ?>"
+                                      class="delete-reply-form d-inline">
+                                    <?= csrf_field() ?>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger delete-reply-btn"
+                                            data-message="Yakin ingin menghapus balasan ini?">
+                                        <i class="bi bi-trash"></i> Hapus
+                                    </button>
+                                </form>
                             </div>
                             <?php endif; ?>
                         </div>
-                        <div class="text-muted mb-2"><?= nl2br($reply['reply_text']) ?></div>
+                        <div class="text-muted mb-2"><?= nl2br(esc($reply['reply_text'])) ?></div>
                         <?php if (!empty($replyAttachments[$reply['id']])): ?>
                             <div class="small mt-2">Lampiran:
                                 <ol class="ps-3 mb-0 mt-1">
@@ -221,12 +227,12 @@
 
 <?= $this->section('scripts') ?>
 
-// Handle delete reply confirmation
+// Handle delete reply confirmation — H2 fix: submit POST form instead of GET href
 document.querySelectorAll('.delete-reply-btn').forEach(btn => {
     btn.addEventListener('click', async function(e) {
         e.preventDefault();
-        const url = this.href;
         const message = this.dataset.message || 'Apakah Anda yakin ingin menghapus data ini?';
+        const form = this.closest('.delete-reply-form');
         
         const result = await Swal.fire({
             title: 'Konfirmasi Hapus',
@@ -239,8 +245,8 @@ document.querySelectorAll('.delete-reply-btn').forEach(btn => {
             cancelButtonText: 'Batal'
         });
         
-        if (result.isConfirmed) {
-            window.location.href = url;
+        if (result.isConfirmed && form) {
+            form.submit(); // POST + CSRF
         }
     });
 });

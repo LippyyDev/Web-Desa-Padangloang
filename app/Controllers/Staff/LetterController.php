@@ -314,6 +314,11 @@ class LetterController extends ProtectedController
             return redirect()->to('/staff/surat/' . $id)->with('error', 'Surat yang ditolak tidak dapat dibalas lagi.');
         }
 
+        // M6: Validasi panjang reply_text
+        if (!$this->validate(['reply_text' => 'required|max_length[5000]'])) {
+            return redirect()->back()->withInput()->with('error', 'Isi balasan wajib diisi dan maksimal 5000 karakter.');
+        }
+
         // Save the reply
         $replyModel  = new LetterReplyModel();
         $replyId     = $replyModel->insert([
@@ -485,6 +490,12 @@ class LetterController extends ProtectedController
             $ext = strtolower($file->getClientExtension());
             if (!in_array($ext, $allowedExtensions)) {
                 session()->setFlashdata('error', 'Salah satu lampiran balasan memiliki format yang tidak didukung. Lampiran tersebut tidak disimpan.');
+                continue;
+            }
+
+            // M2: Batasi ukuran file balasan maksimal 5MB
+            if ($file->getSize() > 5242880) {
+                session()->setFlashdata('error', 'Terdapat lampiran yang melebihi batas 5MB dan gagal diunggah.');
                 continue;
             }
 

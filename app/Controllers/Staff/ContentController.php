@@ -33,6 +33,27 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
+        // M1: Validasi input profil desa
+        $validationRules = [
+            'visi'             => 'permit_empty|max_length[2000]',
+            'misi'             => 'permit_empty|max_length[5000]',
+            'jumlah_penduduk'  => 'permit_empty|integer',
+            'jumlah_kk'        => 'permit_empty|integer',
+            'penduduk_sementara' => 'permit_empty|integer',
+            'jumlah_laki'      => 'permit_empty|integer',
+            'jumlah_perempuan' => 'permit_empty|integer',
+            'mutasi_penduduk'  => 'permit_empty|integer',
+            'kontak_wa'        => 'permit_empty|max_length[20]|regex_match[/^[\d\s\+\-\(\)]+$/]',
+            'kontak_email'     => 'permit_empty|valid_email|max_length[100]',
+            'alamat_kantor'    => 'permit_empty|max_length[500]',
+            'deskripsi_lokasi' => 'permit_empty|max_length[1000]',
+        ];
+
+        if (!$this->validate($validationRules)) {
+            $errors = implode(' ', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('error', 'Validasi gagal: ' . $errors);
+        }
+
         $mapsUrl = $this->request->getPost('maps_url');
         // Extract URL from iframe tag if user pasted full HTML
         if ($mapsUrl && preg_match('/src=["\']([^"\']+)["\']/', $mapsUrl, $matches)) {
@@ -46,12 +67,12 @@ class ContentController extends ProtectedController
         $data         = [
             'visi'                => $this->request->getPost('visi'),
             'misi'                => $this->request->getPost('misi'),
-            'jumlah_penduduk'     => $this->request->getPost('jumlah_penduduk'),
-            'jumlah_kk'           => $this->request->getPost('jumlah_kk'),
-            'penduduk_sementara'  => $this->request->getPost('penduduk_sementara'),
-            'jumlah_laki'         => $this->request->getPost('jumlah_laki'),
-            'jumlah_perempuan'    => $this->request->getPost('jumlah_perempuan'),
-            'mutasi_penduduk'     => $this->request->getPost('mutasi_penduduk'),
+            'jumlah_penduduk'     => $this->request->getPost('jumlah_penduduk') ?: null,
+            'jumlah_kk'           => $this->request->getPost('jumlah_kk') ?: null,
+            'penduduk_sementara'  => $this->request->getPost('penduduk_sementara') ?: null,
+            'jumlah_laki'         => $this->request->getPost('jumlah_laki') ?: null,
+            'jumlah_perempuan'    => $this->request->getPost('jumlah_perempuan') ?: null,
+            'mutasi_penduduk'     => $this->request->getPost('mutasi_penduduk') ?: null,
             'kontak_wa'           => $this->request->getPost('kontak_wa'),
             'kontak_email'        => $this->request->getPost('kontak_email'),
             'alamat_kantor'       => $this->request->getPost('alamat_kantor'),
@@ -383,13 +404,20 @@ class ContentController extends ProtectedController
             foreach ($videoLinks as $block) {
                 $lines = preg_split('/\r\n|\r|\n/', (string) $block);
                 foreach ($lines as $link) {
-                    if (trim($link) === '') {
-                        continue;
+                    $link = trim($link);
+                    if ($link === '') continue;
+
+                    // M3: Hanya izinkan URL dari domain YouTube
+                    $host = @parse_url($link, PHP_URL_HOST);
+                    $allowedHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com'];
+                    if (!$host || !in_array(strtolower($host), $allowedHosts)) {
+                        continue; // Skip URL dari domain yang tidak diizinkan
                     }
+
                     $mediaModel->insert([
                         'album_id'   => $albumId,
                         'media_type' => 'video_link',
-                        'media_path' => trim($link),
+                        'media_path' => $link,
                     ]);
                 }
             }
@@ -675,13 +703,20 @@ class ContentController extends ProtectedController
             foreach ($videoLinks as $block) {
                 $lines = preg_split('/\r\n|\r|\n/', (string) $block);
                 foreach ($lines as $link) {
-                    if (trim($link) === '') {
+                    $link = trim($link);
+                    if ($link === '') continue;
+
+                    // M3: Hanya izinkan URL dari domain YouTube
+                    $host = @parse_url($link, PHP_URL_HOST);
+                    $allowedHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com'];
+                    if (!$host || !in_array(strtolower($host), $allowedHosts)) {
                         continue;
                     }
+
                     $mediaModel->insert([
                         'news_id'    => $newsId,
                         'media_type' => 'video_link',
-                        'media_path' => trim($link),
+                        'media_path' => $link,
                     ]);
                 }
             }
@@ -986,13 +1021,20 @@ class ContentController extends ProtectedController
             foreach ($videoLinks as $block) {
                 $lines = preg_split('/\r\n|\r|\n/', (string) $block);
                 foreach ($lines as $link) {
-                    if (trim($link) === '') {
+                    $link = trim($link);
+                    if ($link === '') continue;
+
+                    // M3: Hanya izinkan URL dari domain YouTube
+                    $host = @parse_url($link, PHP_URL_HOST);
+                    $allowedHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com'];
+                    if (!$host || !in_array(strtolower($host), $allowedHosts)) {
                         continue;
                     }
+
                     $mediaModel->insert([
                         'project_id' => $projectId,
                         'media_type' => 'video_link',
-                        'media_path' => trim($link),
+                        'media_path' => $link,
                     ]);
                 }
             }

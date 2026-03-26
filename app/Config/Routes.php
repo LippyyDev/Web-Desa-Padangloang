@@ -76,7 +76,7 @@ $routes->group('staff', static function ($routes) {
     $routes->get('surat/(:num)', 'Staff\LetterController::show/$1');
     $routes->get('surat/(:num)/hapus', 'Staff\LetterController::delete/$1');
     $routes->post('surat/(:num)/balas', 'Staff\LetterController::reply/$1');
-    $routes->get('surat/(:num)/balasan/(:num)/hapus', 'Staff\LetterController::deleteReply/$1/$2');
+    $routes->post('surat/(:num)/balasan/(:num)/hapus', 'Staff\LetterController::deleteReply/$1/$2');
     $routes->get('surat/(:num)/word', 'Staff\PdfWordController::generateWordFromLetter/$1');
     $routes->get('surat/template/(:segment)', 'Staff\PdfWordController::downloadTemplate/$1');
 
