@@ -56,7 +56,7 @@
             <div class="row g-3 mt-2">
                 <div class="col-md-4">
                     <label class="form-label">Kontak WA</label>
-                    <input type="text" class="form-control" name="kontak_wa" value="<?= esc($profile['kontak_wa'] ?? '') ?>">
+                    <input type="text" class="form-control" name="kontak_wa" value="<?= esc($profile['kontak_wa'] ?? '') ?>" pattern="[0-9]+" title="Hanya angka yang diperbolehkan" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Email</label>
