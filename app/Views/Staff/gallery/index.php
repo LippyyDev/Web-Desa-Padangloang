@@ -1,6 +1,16 @@
 <?= $this->extend('Staff/layout') ?>
 
 <?= $this->section('content') ?>
+<style>
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
+</style>
+
 <div class="page-header">
     <div class="d-flex align-items-center gap-3">
         <div class="page-header-icon">
@@ -117,14 +127,14 @@ $(document).ready(function() {
                     response.data.forEach(function(album) {
                         html += '<div class="col-md-6 col-lg-4 col-xl-3">' +
                             '<div class="card h-100 gallery-card">' +
-                            '<img src="' + album.thumbnail + '" ' +
-                            'class="card-img-top gallery-card-img" ' +
-                            'alt="' + album.nama_album + '" ' +
-                            'loading="lazy">' +
+                            (album.thumbnail
+                                ? '<img src="' + album.thumbnail + '" class="card-img-top gallery-card-img" alt="' + album.nama_album + '" loading="lazy">'
+                                : '<div class="card-img-top gallery-card-img d-flex align-items-center justify-content-center bg-light" style="height:180px"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#9ca3af" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg></div>'
+                            ) +
                             '<div class="card-body">' +
                             '<div class="small text-muted mb-1">' + album.tanggal_waktu + '</div>' +
                             '<h5 class="card-title">' + album.nama_album + '</h5>' +
-                            '<p class="text-muted small">' + (album.deskripsi || '') + '</p>' +
+                            '<p class="text-muted small text-truncate-2" style="min-height: 40px;">' + (album.deskripsi || '') + '</p>' +
                             '<div class="d-flex gap-2">' +
                             '<a href="<?= base_url('/staff/galeri/') ?>' + album.id + '/edit" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a> ' +
                             '<a href="<?= base_url('/staff/galeri/') ?>' + album.id + '/hapus" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Hapus</a>' +

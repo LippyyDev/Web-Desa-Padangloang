@@ -1,5 +1,15 @@
 <?= $this->extend('Staff/layout') ?>
 
+<style>
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
+</style>
+
 <?= $this->section('content') ?>
 <div class="page-header">
     <div class="d-flex align-items-center gap-3">
@@ -124,8 +134,8 @@ $(document).ready(function() {
                             'loading="lazy">' +
                             '<div class="card-body">' +
                             '<div class="small text-muted mb-1">' + item.tanggal_waktu + '</div>' +
-                            '<h5 class="card-title">' + item.judul + '</h5>' +
-                            '<p class="text-muted small">' + shortContent + '</p>' +
+                            '<h5 class="card-title text-truncate-2">' + item.judul + '</h5>' +
+                            '<p class="text-muted small text-truncate-2" style="min-height: 40px;">' + shortContent + '</p>' +
                             '<div class="d-flex gap-2">' +
                             '<a href="<?= base_url('/staff/berita/') ?>' + item.id + '/edit" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a> ' +
                             '<a href="<?= base_url('/staff/berita/') ?>' + item.id + '/hapus" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Hapus</a>' +

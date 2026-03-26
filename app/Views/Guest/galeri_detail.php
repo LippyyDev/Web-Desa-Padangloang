@@ -243,8 +243,8 @@
 <section class="gallery-section position-relative min-vh-100 custom-header-spacing">
     <div class="container position-relative z-1">
         <!-- Header Section -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end mb-5">
-            <div>
+        <div class="d-flex flex-column mb-5">
+            <div class="mb-3">
                  <div class="section-tag mb-2">
                     <span class="line"></span>
                     <span class="text">Detail Album</span>
@@ -262,14 +262,16 @@
                     </div>
                 </div>
 
-                <p class="text-light text-break fs-5 mb-0" style="max-width: 700px; line-height: 1.6; opacity: 0.9;">
+                <p class="text-light text-break fs-5 mb-0" style="max-width: 100%; line-height: 1.6; opacity: 0.9;">
                     <?= esc($album['deskripsi'] ?? '') ?>
                 </p>
             </div>
-            <a href="<?= base_url('/galeri') ?>" class="btn-modern-outline mt-4 mt-md-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-                <span>Kembali</span>
-            </a>
+            <div class="mt-3 d-flex justify-content-end">
+                <a href="<?= base_url('/galeri') ?>" class="btn-modern-outline">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                    <span>Kembali</span>
+                </a>
+            </div>
         </div>
 
         <!-- Media Grid Container -->

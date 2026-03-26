@@ -164,7 +164,7 @@ class ContentController extends ProtectedController
                 'nama_album'    => esc($album['nama_album']),
                 'deskripsi'     => esc($album['deskripsi'] ?? ''),
                 'tanggal_waktu' => date('d M Y', strtotime($album['tanggal_waktu'])),
-                'thumbnail'     => $album['thumbnail'] ? base_url($album['thumbnail']) : 'https://via.placeholder.com/600x360?text=Album',
+                'thumbnail'     => $album['thumbnail'] ? base_url($album['thumbnail']) : '',
             ];
         }
 
@@ -262,7 +262,7 @@ class ContentController extends ProtectedController
         $albumId = $albumModel->insert($data, true);
         $this->saveGalleryMedia($albumId);
 
-        return redirect()->back()->with('success', 'Album galeri disimpan.');
+        return redirect()->to('/staff/galeri')->with('success', 'Album galeri disimpan.');
     }
 
     public function updateGallery($id)
@@ -325,7 +325,7 @@ class ContentController extends ProtectedController
         $albumModel->update($id, $data);
         $this->saveGalleryMedia($id);
 
-        return redirect()->back()->with('success', 'Album diperbarui.');
+        return redirect()->to('/staff/galeri')->with('success', 'Album diperbarui.');
     }
 
     public function deleteGallery($id)

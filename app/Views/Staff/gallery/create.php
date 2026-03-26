@@ -235,7 +235,12 @@
 
             if (!valid) {
                 e.preventDefault();
-                alert('Harap perbaiki kesalahan pada form sebelum menyimpan.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Kesalahan Validasi Form',
+                    text: 'Harap perbaiki kesalahan pada form sebelum menyimpan.',
+                    confirmButtonColor: '#0d6efd'
+                });
             }
         });
     });
