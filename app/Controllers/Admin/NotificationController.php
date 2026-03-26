@@ -24,8 +24,10 @@ class NotificationController extends ProtectedController
 
         $userModel = new UserModel();
         
-        // Ambil 50 akun terbaru yang terdaftar
-        $newAccounts = $userModel->where('role', 'user')
+        // H1: Pilih hanya kolom yang aman — jangan ekspos password_hash atau google_id
+        $newAccounts = $userModel
+            ->select('id, username, email, role, status, created_at')
+            ->where('role', 'user')
             ->orderBy('created_at', 'DESC')
             ->limit(50)
             ->findAll();

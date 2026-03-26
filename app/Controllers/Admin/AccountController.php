@@ -151,10 +151,21 @@ class AccountController extends ProtectedController
         }
 
         // Validasi input fields
-        if (!$this->validate([
-            'username' => 'required|max_length[50]',
-            'email'    => 'required|valid_email|max_length[100]',
-        ])) {
+        if (!$this->validate(
+            [
+                'username' => 'required|max_length[50]',
+                'email'    => 'required|valid_email|max_length[100]',
+                // H2: Validasi password wajib dan minimal 8 karakter dengan huruf + angka
+                'password' => 'required|min_length[8]|regex_match[/^(?=.*[a-zA-Z])(?=.*[0-9]).+$/]',
+            ],
+            [
+                'password' => [
+                    'required'    => 'Password wajib diisi.',
+                    'min_length'  => 'Password minimal 8 karakter.',
+                    'regex_match' => 'Password harus mengandung minimal satu huruf dan satu angka.',
+                ],
+            ]
+        )) {
             $errors = implode(' ', $this->validator->getErrors());
             return redirect()->back()->withInput()->with('error', $errors);
         }
@@ -341,6 +352,11 @@ class AccountController extends ProtectedController
     {
         if ($redirect = $this->guard(['admin'])) {
             return $redirect;
+        }
+
+        // M2: Cegah admin menghapus akunnya sendiri
+        if ($id == $this->currentUser['id']) {
+            return redirect()->back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
 
         $userModel = new UserModel();
