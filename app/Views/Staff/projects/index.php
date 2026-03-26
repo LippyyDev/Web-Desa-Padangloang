@@ -132,10 +132,10 @@ $(document).ready(function() {
 
                         html += '<div class="col-md-6 col-lg-4 col-xl-3">' +
                             '<div class="card h-100 gallery-card">' +
-                            '<img src="' + project.thumbnail + '" ' +
-                            'class="card-img-top gallery-card-img" ' +
-                            'alt="' + project.judul + '" ' +
-                            'loading="lazy">' +
+                            (project.thumbnail
+                                ? '<img src="' + project.thumbnail + '" class="card-img-top gallery-card-img" alt="' + project.judul + '" loading="lazy">'
+                                : '<div class="card-img-top gallery-card-img d-flex align-items-center justify-content-center bg-light" style="height:180px"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#9ca3af" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg></div>'
+                            ) +
                             '<div class="card-body">' +
                             '<div class="d-flex justify-content-between mb-2">' +
                             '<div class="small text-muted">' + project.tanggal_waktu + '</div>' +

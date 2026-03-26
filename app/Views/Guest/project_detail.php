@@ -323,7 +323,7 @@
         <!-- Project Content -->
         <div class="news-content-card">
             <img src="<?= $item['thumbnail'] ? base_url($item['thumbnail']) : 'https://via.placeholder.com/900x420?text=Project' ?>" class="news-thumbnail" alt="<?= esc($item['judul']) ?>">
-            <article class="news-article">
+            <article class="news-article text-break">
                 <?= purify_html($item['deskripsi']) ?>
             </article>
         </div>

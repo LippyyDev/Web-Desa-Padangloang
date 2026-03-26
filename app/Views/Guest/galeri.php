@@ -105,6 +105,21 @@
         border-color: rgba(255, 255, 255, 0.05);
         cursor: not-allowed;
     }
+
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
+    .text-truncate-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
 </style>
 
 <!-- Global Background Wrapper -->
@@ -274,10 +289,8 @@ function loadAlbums(page = 1) {
                 const day = dateObj.getDate();
                 const month = dateObj.toLocaleString('id-ID', { month: 'short' });
                 
-                // Helper to limit words (simple approximation)
-                const desc = album.deskripsi || '';
-                const words = desc.replace(/<[^>]*>?/gm, '').split(/\s+/); // strip tags and split
-                const truncatedDesc = words.length > 15 ? words.slice(0, 15).join(' ') + '...' : words.join(' ');
+                // Use raw text since LandingController escapes and strips it
+                const truncatedDesc = album.deskripsi || '';
                 
                 // Use a transparent placeholder or low-res placeholder initially
                 const placeholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -294,7 +307,7 @@ function loadAlbums(page = 1) {
                             </div>
                             <div class="glass-card-body">
                                 <h5 class="glass-title">${escapeHtml(album.nama_album)}</h5>
-                                <p class="glass-desc">${escapeHtml(truncatedDesc)}</p>
+                                <p class="glass-desc text-truncate-2">${truncatedDesc}</p>
                                 <a href="<?= base_url('/galeri') ?>/${album.id}" class="glass-link stretched-link">
                                     <span>Lihat Album</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>

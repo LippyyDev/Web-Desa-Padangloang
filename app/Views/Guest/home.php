@@ -3,6 +3,22 @@
 <?= $this->section('pageClass') ?>hero-page<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
+<style>
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
+    .text-truncate-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
+</style>
 <section class="hero-section position-relative" id="heroSection">
     <div class="hero-overlay"></div>
     <div class="hero-particles" id="heroParticles"></div>
@@ -166,7 +182,7 @@
                         </div>
                         <div class="glass-card-body">
                             <h5 class="glass-title"><?= esc($album['nama_album']) ?></h5>
-                            <p class="glass-desc"><?= word_limiter(strip_tags($album['deskripsi'] ?? ''), 15) ?></p>
+                            <p class="glass-desc text-truncate-2"><?= esc(strip_tags($album['deskripsi'] ?? '')) ?></p>
                             <a href="<?= base_url('/galeri/' . $album['id']) ?>" class="glass-link stretched-link">
                                 <span>Lihat Album</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -219,7 +235,7 @@
                         </div>
                         <div class="news-body">
                             <h5 class="news-title"><?= esc($item['judul']) ?></h5>
-                            <p class="news-excerpt"><?= word_limiter(strip_tags($item['isi']), 12) ?></p>
+                            <p class="news-excerpt text-truncate-3"><?= esc(strip_tags($item['isi'] ?? '')) ?></p>
                             <a href="<?= base_url('/berita/' . $item['id']) ?>" class="news-read-more stretched-link">
                                 <span>Baca Selengkapnya</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -295,7 +311,7 @@
                                 <div class="fw-bold text-primary fs-5">Rp<?= number_format($project['anggaran'] ?? 0, 0, ',', '.') ?></div>
                             </div>
                             
-                            <p class="text-muted small mb-4"><?= word_limiter(strip_tags($project['deskripsi']), 15) ?></p>
+                            <p class="text-muted small mb-4 text-truncate-3"><?= esc(strip_tags($project['deskripsi'] ?? '')) ?></p>
                             
                             <a href="<?= base_url('/project/' . $project['id']) ?>" class="btn btn-outline-primary btn-sm w-100 rounded-pill py-2 fw-semibold stretched-link">
                                 Detail Progress

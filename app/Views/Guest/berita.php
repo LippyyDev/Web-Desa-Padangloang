@@ -105,6 +105,21 @@
         cursor: not-allowed;
     }
     
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
+    .text-truncate-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
+    
     /* Glass Search Input */
     .glass-search {
         background: rgba(15, 23, 42, 0.6);
@@ -321,11 +336,8 @@ function loadNews(page = 1) {
                 const day = dateObj.getDate();
                 const month = dateObj.toLocaleString('id-ID', { month: 'short' });
                 
-                // Strip HTML tags and limit words
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = item.isi;
-                const plainText = tempDiv.textContent || tempDiv.innerText || '';
-                const limitedText = plainText.split(' ').slice(0, 15).join(' ') + (plainText.split(' ').length > 15 ? '...' : '');
+                // Extract text directly
+                const limitedText = item.isi || '';
                 
                 // Use a transparent placeholder or low-res placeholder initially
                 const placeholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -342,7 +354,7 @@ function loadNews(page = 1) {
                             </div>
                             <div class="news-body">
                                 <h5 class="news-title">${escapeHtml(item.judul)}</h5>
-                                <p class="news-excerpt">${escapeHtml(limitedText)}</p>
+                                <p class="news-excerpt text-truncate-3">${limitedText}</p>
                                 <a href="<?= base_url('/berita') ?>/${item.id}" class="news-read-more stretched-link">
                                     <span>Baca Selengkapnya</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>

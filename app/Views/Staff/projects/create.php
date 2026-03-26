@@ -64,7 +64,8 @@
                 </div>
                 <div class="col-12">
                     <label class="form-label">Deskripsi <span class="text-danger">*</span></label>
-                    <textarea class="form-control" name="deskripsi" rows="4" required></textarea>
+                    <textarea class="form-control" name="deskripsi" id="deskripsiInput" rows="4" required maxlength="1850" placeholder="Tulis deskripsi project... (Maksimal 1850 karakter)"></textarea>
+                    <div class="form-text text-end mt-1 text-muted" id="deskripsiCharCount"><strong>0</strong> / 1850 karakter</div>
                 </div>
             </div>
             <div class="mt-4">
@@ -78,6 +79,26 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+
+        // ── Deskripsi character counter ──────────────────────────────────
+        const deskripsiInput = document.getElementById('deskripsiInput');
+        const deskripsiCharCount = document.getElementById('deskripsiCharCount');
+        function updateDeskripsiCount() {
+            let length = deskripsiInput.value.length;
+            if (length > 1850) {
+                deskripsiInput.value = deskripsiInput.value.substring(0, 1850);
+                length = 1850;
+                deskripsiCharCount.classList.add('text-danger');
+                deskripsiCharCount.classList.remove('text-muted');
+            } else {
+                deskripsiCharCount.classList.remove('text-danger');
+                deskripsiCharCount.classList.add('text-muted');
+            }
+            deskripsiCharCount.innerHTML = '<strong>' + length + '</strong> / 1850 karakter';
+        }
+        deskripsiInput.addEventListener('input', updateDeskripsiCount);
+        deskripsiInput.addEventListener('paste', () => setTimeout(updateDeskripsiCount, 50));
+        updateDeskripsiCount();
 
         // ── Judul character counter ──────────────────────────────────────
         const judulInput = document.getElementById('judulInput');
@@ -238,7 +259,7 @@
 
             if (!valid) {
                 e.preventDefault();
-                alert('Harap perbaiki kesalahan pada form sebelum menyimpan.');
+                Swal.fire({ icon: 'warning', title: 'Periksa Form', text: 'Harap perbaiki kesalahan pada form sebelum menyimpan.', confirmButtonColor: '#0d6efd' });
             }
         });
     });

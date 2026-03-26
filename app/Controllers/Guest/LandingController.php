@@ -113,7 +113,7 @@ class LandingController extends BaseController
         // Escape properties to prevent XSS
         foreach ($albums as &$item) {
             $item['nama_album'] = esc($item['nama_album']);
-            $item['deskripsi'] = esc($item['deskripsi']);
+            $item['deskripsi'] = esc(strip_tags($item['deskripsi'] ?? ''));
         }
         
         $albumMedia = [];
@@ -228,7 +228,7 @@ class LandingController extends BaseController
         // Escape properties to prevent XSS
         foreach ($news as &$item) {
             $item['judul'] = esc($item['judul']);
-            $item['isi'] = esc($item['isi']);
+            $item['isi'] = esc(strip_tags($item['isi'] ?? ''));
         }
 
         return $this->response->setJSON([
@@ -332,7 +332,7 @@ class LandingController extends BaseController
         // Escape properties to prevent XSS
         foreach ($projects as &$item) {
             $item['judul'] = esc($item['judul']);
-            $item['deskripsi'] = esc($item['deskripsi']);
+            $item['deskripsi'] = esc(strip_tags($item['deskripsi'] ?? ''));
             $item['status'] = esc($item['status']);
         }
 

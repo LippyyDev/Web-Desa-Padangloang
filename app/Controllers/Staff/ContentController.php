@@ -834,7 +834,7 @@ class ContentController extends ProtectedController
                 'status'        => esc($project['status']),
                 'anggaran'      => $project['anggaran'] ?? 0,
                 'tanggal_waktu' => date('d M Y', strtotime($project['tanggal_waktu'])),
-                'thumbnail'     => $project['thumbnail'] ? base_url($project['thumbnail']) : 'https://via.placeholder.com/600x360?text=Project',
+                'thumbnail'     => $project['thumbnail'] ? base_url($project['thumbnail']) : '',
             ];
         }
 
@@ -917,7 +917,7 @@ class ContentController extends ProtectedController
         $projectId = $projectModel->insert($data, true);
         $this->saveProjectMedia($projectId);
 
-        return redirect()->back()->with('success', 'Project disimpan.');
+        return redirect()->to('/staff/projects')->with('success', 'Project disimpan.');
     }
 
     public function updateProject($id)
@@ -958,7 +958,7 @@ class ContentController extends ProtectedController
         $projectModel->update($id, $data);
         $this->saveProjectMedia($id);
 
-        return redirect()->back()->with('success', 'Project diperbarui.');
+        return redirect()->to('/staff/projects')->with('success', 'Project diperbarui.');
     }
 
     public function deleteProject($id)

@@ -262,7 +262,7 @@
                     </div>
                 </div>
 
-                <p class="text-light fs-5 mb-0" style="max-width: 700px; line-height: 1.6; opacity: 0.9;">
+                <p class="text-light text-break fs-5 mb-0" style="max-width: 700px; line-height: 1.6; opacity: 0.9;">
                     <?= esc($album['deskripsi'] ?? '') ?>
                 </p>
             </div>

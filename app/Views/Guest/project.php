@@ -96,6 +96,20 @@
         cursor: not-allowed;
     }
 
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
+    .text-truncate-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+    }
     /* Project Card Styles */
     .project-card-modern {
         background: #fff;
@@ -348,11 +362,8 @@ function loadProjects(page = 1) {
                 const budget = parseInt(project.anggaran || 0);
                 const formattedBudget = budget.toLocaleString('id-ID');
                 
-                // Truncate text
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = project.deskripsi;
-                const plainText = tempDiv.textContent || tempDiv.innerText || '';
-                const limitedText = plainText.split(' ').slice(0, 15).join(' ') + (plainText.split(' ').length > 15 ? '...' : '');
+                // Use raw text since LandingController escapes and strips it
+                const limitedText = project.deskripsi || '';
 
                 // Status Badge Logic
                 let statusClass = 'bg-secondary-subtle text-secondary border-secondary-subtle';
@@ -387,7 +398,7 @@ function loadProjects(page = 1) {
                                     <div class="fw-bold text-primary fs-5">Rp${formattedBudget}</div>
                                 </div>
                                 
-                                <p class="text-muted small mb-4">${escapeHtml(limitedText)}</p>
+                                <p class="text-muted small mb-4 text-truncate-3">${limitedText}</p>
                                 
                                 <a href="<?= base_url('/project') ?>/${project.id}" class="btn btn-outline-primary btn-sm w-100 rounded-pill py-2 fw-semibold stretched-link">
                                     Detail Progress
