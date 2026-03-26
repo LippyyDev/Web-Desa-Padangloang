@@ -520,7 +520,7 @@ class ContentController extends ProtectedController
                 'judul'         => esc($item['judul']),
                 'isi'           => strip_tags($item['isi']),
                 'tanggal_waktu' => date('d M Y', strtotime($item['tanggal_waktu'])),
-                'thumbnail'     => $item['thumbnail'] ? base_url($item['thumbnail']) : 'https://via.placeholder.com/600x360?text=Berita',
+                'thumbnail'     => $item['thumbnail'] ? base_url($item['thumbnail']) : '',
             ];
         }
 
@@ -601,7 +601,7 @@ class ContentController extends ProtectedController
         $newsId = $newsModel->insert($data, true);
         $this->saveNewsMedia($newsId);
 
-        return redirect()->back()->with('success', 'Berita disimpan.');
+        return redirect()->to('/staff/berita')->with('success', 'Berita disimpan.');
     }
 
     public function updateNews($id)
@@ -640,7 +640,7 @@ class ContentController extends ProtectedController
         $newsModel->update($id, $data);
         $this->saveNewsMedia($id);
 
-        return redirect()->back()->with('success', 'Berita diperbarui.');
+        return redirect()->to('/staff/berita')->with('success', 'Berita diperbarui.');
     }
 
     public function deleteNews($id)
