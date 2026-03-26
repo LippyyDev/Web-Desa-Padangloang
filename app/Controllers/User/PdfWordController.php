@@ -431,7 +431,7 @@ class PdfWordController extends ProtectedController
         
         $pdf->Cell($colWidth1, 5, 'Alamat', 0, 0, 'L');
         $pdf->Cell($colWidth2, 5, ':', 0, 0, 'L');
-        $pdf->MultiCell($colWidth3, 5, $this->getProfileValue($profile, 'alamat'), 0, 'L', false, 1, '', '', true, 0, false, true, 5, 'T');
+        $pdf->MultiCell($colWidth3, 5, $this->getProfileValue($profile, 'alamat'), 0, 'L', false, 1);
         
         $pdf->Cell($colWidth1, 5, 'No NIK', 0, 0, 'L');
         $pdf->Cell($colWidth2, 5, ':', 0, 0, 'L');
@@ -442,11 +442,11 @@ class PdfWordController extends ProtectedController
         $pdf->Cell(0, 5, 'Dengan ini mengajukan permohonan pembuatan Surat ' . $letter['tipe_surat'] . '.', 0, 1, 'L');
         $pdf->Ln(2);
 
-        $pdf->MultiCell(0, 5, $letter['isi_surat'], 0, 'L', false, 1, '', '', true, 0, false, true, 5, 'T');
+        $pdf->MultiCell(0, 5, $letter['isi_surat'], 0, 'L', false, 1);
         $pdf->Ln(2);
 
         $penutup = 'Demikian surat permohonan ini saya sampaikan. Atas perhatian dan bantuan Bapak/Ibu, saya ucapkan terima kasih.';
-        $pdf->MultiCell(0, 5, $penutup, 0, 'L', false, 1, '', '', true, 0, false, true, 5, 'T');
+        $pdf->MultiCell(0, 5, $penutup, 0, 'L', false, 1);
         $pdf->Ln(8);
 
         $pdf->Cell(0, 5, 'Padangloang, ' . $tanggalSekarang, 0, 1, 'R');
@@ -686,7 +686,10 @@ class PdfWordController extends ProtectedController
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
         $objWriter->save($filepath);
 
-        return $this->response->download($filepath, null)->setFileName($filename);
+        $response = $this->response->download($filepath, null)->setFileName($filename);
+        $response->setHeader('X-CSRF-TOKEN', csrf_hash());
+        $response->setHeader('Access-Control-Expose-Headers', 'X-CSRF-TOKEN');
+        return $response;
     }
 
     public function previewPDF()
@@ -836,7 +839,7 @@ class PdfWordController extends ProtectedController
         
         $pdf->Cell($colWidth1, 5, 'Alamat', 0, 0, 'L');
         $pdf->Cell($colWidth2, 5, ':', 0, 0, 'L');
-        $pdf->MultiCell($colWidth3, 5, $this->getProfileValue($profile, 'alamat'), 0, 'L', false, 1, '', '', true, 0, false, true, 5, 'T');
+        $pdf->MultiCell($colWidth3, 5, $this->getProfileValue($profile, 'alamat'), 0, 'L', false, 1);
         
         $pdf->Cell($colWidth1, 5, 'No NIK', 0, 0, 'L');
         $pdf->Cell($colWidth2, 5, ':', 0, 0, 'L');
@@ -846,11 +849,11 @@ class PdfWordController extends ProtectedController
         $pdf->Cell(0, 5, 'Dengan ini mengajukan permohonan pembuatan Surat ' . $tipeSurat . '.', 0, 1, 'L');
         $pdf->Ln(2);
 
-        $pdf->MultiCell(0, 5, $isiSurat, 0, 'L', false, 1, '', '', true, 0, false, true, 5, 'T');
+        $pdf->MultiCell(0, 5, $isiSurat, 0, 'L', false, 1);
         $pdf->Ln(2);
 
         $penutup = 'Demikian surat permohonan ini saya sampaikan. Atas perhatian dan bantuan Bapak/Ibu, saya ucapkan terima kasih.';
-        $pdf->MultiCell(0, 5, $penutup, 0, 'L', false, 1, '', '', true, 0, false, true, 5, 'T');
+        $pdf->MultiCell(0, 5, $penutup, 0, 'L', false, 1);
         $pdf->Ln(8);
 
         $pdf->Cell(0, 5, 'Padangloang, ' . $tanggalSekarang, 0, 1, 'R');
@@ -858,6 +861,15 @@ class PdfWordController extends ProtectedController
         $pdf->Cell(0, 5, $profile['nama_lengkap'] ?? '-', 0, 1, 'R');
 
         $filename = 'Surat_' . str_replace(' ', '_', $tipeSurat) . '_' . date('YmdHis') . '.pdf';
-        $pdf->Output($filename, 'D');
+        $filepath = WRITEPATH . 'uploads/temp/' . $filename;
+        if (!is_dir(WRITEPATH . 'uploads/temp')) {
+            mkdir(WRITEPATH . 'uploads/temp', 0755, true);
+        }
+        $pdf->Output($filepath, 'F');
+
+        $response = $this->response->download($filepath, null)->setFileName($filename);
+        $response->setHeader('X-CSRF-TOKEN', csrf_hash());
+        $response->setHeader('Access-Control-Expose-Headers', 'X-CSRF-TOKEN');
+        return $response;
     }
 }

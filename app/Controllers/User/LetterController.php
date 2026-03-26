@@ -293,6 +293,10 @@ class LetterController extends ProtectedController
             return redirect()->to('/user/surat')->with('error', 'Surat tidak ditemukan.');
         }
 
+        if ($letter['status'] !== 'Menunggu') {
+            return redirect()->to('/user/surat')->with('error', 'Surat yang sudah diproses tidak dapat diedit lagi.');
+        }
+
         return view('User/letters/form', ['letter' => $letter]);
     }
 
@@ -331,6 +335,10 @@ class LetterController extends ProtectedController
 
         if (!$letter) {
             return redirect()->to('/user/surat')->with('error', 'Surat tidak ditemukan.');
+        }
+
+        if ($letter['status'] !== 'Menunggu') {
+            return redirect()->to('/user/surat')->with('error', 'Surat yang sudah diproses tidak dapat diedit lagi.');
         }
 
         $letterModel->update($id, [

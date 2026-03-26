@@ -57,7 +57,8 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Isi Surat</label>
-                <textarea class="form-control" name="isi_surat" rows="6" required maxlength="3000" placeholder="Ketikkan isi surat Anda secara jelas... (Maksimal 3000 karakter)"><?= set_value('isi_surat', $letter['isi_surat'] ?? '') ?></textarea>
+                <textarea class="form-control" name="isi_surat" id="isiSuratInput" rows="6" required maxlength="1850" placeholder="Ketikkan isi surat Anda secara jelas... (Maksimal 1850 karakter)"><?= set_value('isi_surat', $letter['isi_surat'] ?? '') ?></textarea>
+                <div class="form-text text-end mt-1 text-muted" id="charCountDisplay"><strong>0</strong> / 1850 karakter</div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Lampiran</label>
@@ -110,16 +111,17 @@ function renderFileList() {
         else if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) iconClass = 'bi-file-earmark-image-fill text-info';
         
         const sizeMb = (file.size / 1024 / 1024).toFixed(2);
+        const fileUrl = URL.createObjectURL(file);
         
         const li = document.createElement('li');
         li.className = 'mb-1';
         li.innerHTML = `
             <div class="d-flex align-items-center gap-2">
-                <span class="text-decoration-none text-dark d-inline-flex align-items-center gap-1 flex-grow-1 text-truncate">
+                <a href="${fileUrl}" target="_blank" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1 flex-grow-1 text-truncate cursor-pointer hover-primary" title="Klik untuk melihat pratinjau">
                     <i class="bi ${iconClass} flex-shrink-0"></i>
                     <span class="attachment-filename text-truncate">${escapeHtml(file.name)}</span>
                     <span class="small text-muted flex-shrink-0 ms-1">(${sizeMb} MB)</span>
-                </span>
+                </a>
                 <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="removeFile(${index})" title="Hapus Lampiran">
                     <i class="bi bi-trash"></i>
                 </button>
@@ -202,6 +204,37 @@ document.getElementById('fileInput')?.addEventListener('change', function(e) {
     
     renderFileList();
 });
+
+// Character Counter & Limiter Logic (diaplikasikan pada Edit maupun Create)
+const isiSuratInput = document.getElementById('isiSuratInput');
+const charCountDisplay = document.getElementById('charCountDisplay');
+
+function updateCharCount() {
+    if (!isiSuratInput || !charCountDisplay) return;
+    
+    let length = isiSuratInput.value.length;
+    
+    if (length > 1850) {
+        // Potong sisa karakternya jika melebihi batas 1850 (meskipun sudah dijaga maxlength)
+        isiSuratInput.value = isiSuratInput.value.substring(0, 1850);
+        length = 1850;
+        
+        charCountDisplay.classList.remove('text-muted');
+        charCountDisplay.classList.add('text-danger');
+    } else {
+        charCountDisplay.classList.remove('text-danger');
+        charCountDisplay.classList.add('text-muted');
+    }
+    
+    charCountDisplay.innerHTML = `<strong>${length}</strong> / 1850 karakter`;
+}
+
+if (isiSuratInput) {
+    isiSuratInput.addEventListener('input', updateCharCount);
+    isiSuratInput.addEventListener('paste', () => setTimeout(updateCharCount, 50));
+    // Update saat halaman dimuat kali pertama
+    updateCharCount();
+}
 </script>
 
 <?php if (!isset($letter)): // JavaScript hanya untuk mode create ?>
@@ -247,12 +280,22 @@ document.getElementById('fileInput')?.addEventListener('change', function(e) {
         const isiSurat = isiTextarea.value;
         
         if (!tipeSurat) {
-            alert('Pilih jenis surat terlebih dahulu!');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian',
+                text: 'Pilih jenis surat terlebih dahulu!',
+                confirmButtonColor: '#0d6efd'
+            });
             return;
         }
         
         if (!isiSurat.trim()) {
-            alert('Isi surat tidak boleh kosong!');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian',
+                text: 'Isi surat tidak boleh kosong!',
+                confirmButtonColor: '#0d6efd'
+            });
             return;
         }
         
@@ -265,9 +308,19 @@ document.getElementById('fileInput')?.addEventListener('change', function(e) {
         // Submit ke endpoint export Word
         fetch('<?= base_url('/user/surat/preview/word') ?>', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            credentials: 'same-origin'
         })
         .then(response => {
+            const newCsrf = response.headers.get('X-CSRF-TOKEN');
+            if (newCsrf) {
+                const csrfInput = document.querySelector('input[name="<?= csrf_token() ?>"]');
+                if (csrfInput) csrfInput.value = newCsrf;
+            }
             if (response.ok) {
                 return response.blob();
             }
@@ -299,12 +352,22 @@ document.getElementById('fileInput')?.addEventListener('change', function(e) {
         const isiSurat = isiTextarea.value;
         
         if (!tipeSurat) {
-            alert('Pilih jenis surat terlebih dahulu!');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian',
+                text: 'Pilih jenis surat terlebih dahulu!',
+                confirmButtonColor: '#0d6efd'
+            });
             return;
         }
         
         if (!isiSurat.trim()) {
-            alert('Isi surat tidak boleh kosong!');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian',
+                text: 'Isi surat tidak boleh kosong!',
+                confirmButtonColor: '#0d6efd'
+            });
             return;
         }
         
@@ -317,9 +380,19 @@ document.getElementById('fileInput')?.addEventListener('change', function(e) {
         // Submit ke endpoint export PDF
         fetch('<?= base_url('/user/surat/preview/pdf') ?>', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            credentials: 'same-origin'
         })
         .then(response => {
+            const newCsrf = response.headers.get('X-CSRF-TOKEN');
+            if (newCsrf) {
+                const csrfInput = document.querySelector('input[name="<?= csrf_token() ?>"]');
+                if (csrfInput) csrfInput.value = newCsrf;
+            }
             if (response.ok) {
                 return response.blob();
             }

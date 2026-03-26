@@ -98,7 +98,8 @@
             
             <div class="mb-3">
                 <label class="form-label">Isi Balasan</label>
-                <textarea class="form-control" name="reply_text" rows="5" required placeholder="Tulis balasan surat di sini..."></textarea>
+                <textarea class="form-control" name="reply_text" id="replyTextInput" rows="5" required maxlength="1850" placeholder="Tulis balasan surat di sini... (Maksimal 1850 karakter)"></textarea>
+                <div class="form-text text-end mt-1 text-muted" id="charCountDisplay"><strong>0</strong> / 1850 karakter</div>
             </div>
             
             <?php if (in_array($letter['tipe_surat'], ['Keterangan Usaha', 'Keterangan Tidak Mampu', 'Keterangan Belum Menikah', 'Keterangan Domisili', 'Undangan'])): ?>
@@ -111,7 +112,11 @@
             
             <div class="mb-3">
                 <label class="form-label">Lampiran (opsional)</label>
-                <input type="file" class="form-control" name="reply_attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp">
+                <input type="file" id="replyFileInput" class="form-control" name="reply_attachments[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp">
+                <div class="form-text">Dapat mengunggah maksimal 5 file. Maksimal ukuran per file 1MB.</div>
+                
+                <!-- Container untuk preview list file yang dipilih -->
+                <ol class="ps-3 mt-3 mb-0 d-none" id="replyFileListPreview"></ol>
             </div>
             
             <div class="d-grid gap-2">
@@ -226,6 +231,150 @@
 </div>
 
 <?= $this->section('scripts') ?>
+
+// DataTransfer state for Reply Attachments
+let replyDataTransfer = new DataTransfer();
+
+function escapeReplyHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function renderReplyFileList() {
+    const preview = document.getElementById('replyFileListPreview');
+    const input = document.getElementById('replyFileInput');
+    
+    if (!preview || !input) return;
+    
+    preview.innerHTML = '';
+    
+    if (replyDataTransfer.files.length === 0) {
+        preview.classList.add('d-none');
+        return;
+    }
+    
+    preview.classList.remove('d-none');
+    
+    Array.from(replyDataTransfer.files).forEach((file, index) => {
+        const ext = file.name.split('.').pop().toLowerCase();
+        let iconClass = 'bi-file-earmark';
+        
+        if (ext === 'pdf') iconClass = 'bi-file-earmark-pdf-fill text-danger';
+        else if (['doc', 'docx'].includes(ext)) iconClass = 'bi-file-earmark-word-fill text-primary';
+        else if (['xls', 'xlsx'].includes(ext)) iconClass = 'bi-file-earmark-excel-fill text-success';
+        else if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) iconClass = 'bi-file-earmark-image-fill text-info';
+        
+        const sizeMb = (file.size / 1024 / 1024).toFixed(2);
+        const fileUrl = URL.createObjectURL(file);
+        
+        const li = document.createElement('li');
+        li.className = 'mb-1';
+        li.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+                <a href="${fileUrl}" target="_blank" class="text-decoration-none text-dark d-inline-flex align-items-center gap-1 flex-grow-1 text-truncate cursor-pointer hover-primary" title="Klik untuk melihat pratinjau">
+                    <i class="bi ${iconClass} flex-shrink-0"></i>
+                    <span class="attachment-filename text-truncate">${escapeReplyHtml(file.name)}</span>
+                    <span class="small text-muted flex-shrink-0 ms-1">(${sizeMb} MB)</span>
+                </a>
+                <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="removeReplyFile(${index})" title="Hapus Lampiran">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        preview.appendChild(li);
+    });
+}
+
+window.removeReplyFile = function(index) {
+    const dt = new DataTransfer();
+    const files = Array.from(replyDataTransfer.files);
+    
+    files.splice(index, 1);
+    files.forEach(file => dt.items.add(file));
+    
+    replyDataTransfer = dt;
+    document.getElementById('replyFileInput').files = replyDataTransfer.files;
+    
+    renderReplyFileList();
+};
+
+document.getElementById('replyFileInput')?.addEventListener('change', function(e) {
+    const newFiles = Array.from(e.target.files);
+    let tempDt = new DataTransfer();
+    
+    Array.from(replyDataTransfer.files).forEach(file => {
+        tempDt.items.add(file);
+    });
+    
+    if (tempDt.items.length + newFiles.length > 5) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Terlalu Banyak File',
+            text: 'Total lampiran maksimal hanya 5 file. Anda mencoba menyertakan ' + (tempDt.items.length + newFiles.length) + ' file.',
+            confirmButtonColor: '#0d6efd'
+        });
+        e.target.value = '';
+        e.target.files = replyDataTransfer.files;
+        return;
+    }
+    
+    for (let i = 0; i < newFiles.length; i++) {
+        if (newFiles[i].size > 1048576) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ukuran File Terlalu Besar',
+                text: 'Ukuran file "' + newFiles[i].name + '" (' + (newFiles[i].size / 1024 / 1024).toFixed(2) + 'MB) terlalu besar. Maksimal 1MB per file.',
+                confirmButtonColor: '#0d6efd'
+            });
+            e.target.value = '';
+            e.target.files = replyDataTransfer.files;
+            return;
+        }
+        
+        const isDuplicate = Array.from(tempDt.files).some(existingFile => 
+            existingFile.name === newFiles[i].name && existingFile.size === newFiles[i].size
+        );
+        
+        if (!isDuplicate) {
+            tempDt.items.add(newFiles[i]);
+        }
+    }
+    
+    replyDataTransfer = tempDt;
+    e.target.value = ''; 
+    e.target.files = replyDataTransfer.files;
+    
+    renderReplyFileList();
+});
+
+// Character Counter & Limiter Logic for Reply Text
+const replyTextInput = document.getElementById('replyTextInput');
+const charCountDisplay = document.getElementById('charCountDisplay');
+
+function updateReplyCharCount() {
+    if (!replyTextInput || !charCountDisplay) return;
+    
+    let length = replyTextInput.value.length;
+    
+    if (length > 1850) {
+        replyTextInput.value = replyTextInput.value.substring(0, 1850);
+        length = 1850;
+        charCountDisplay.classList.remove('text-muted');
+        charCountDisplay.classList.add('text-danger');
+    } else {
+        charCountDisplay.classList.remove('text-danger');
+        charCountDisplay.classList.add('text-muted');
+    }
+    
+    charCountDisplay.innerHTML = `<strong>${length}</strong> / 1850 karakter`;
+}
+
+if (replyTextInput) {
+    replyTextInput.addEventListener('input', updateReplyCharCount);
+    replyTextInput.addEventListener('paste', () => setTimeout(updateReplyCharCount, 50));
+    updateReplyCharCount();
+}
 
 // Handle delete reply confirmation — H2 fix: submit POST form instead of GET href
 document.querySelectorAll('.delete-reply-btn').forEach(btn => {

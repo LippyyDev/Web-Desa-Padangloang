@@ -17,9 +17,11 @@
         </div>
     </div>
     <div class="page-header-actions">
+        <?php if ($letter['status'] === 'Menunggu'): ?>
         <a href="<?= base_url('/user/surat/' . $letter['id'] . '/edit') ?>" class="page-header-icon" title="Edit Surat">
             <i class="bi bi-pencil"></i>
         </a>
+        <?php endif; ?>
         <a href="<?= base_url('/user/surat/' . $letter['id'] . '/hapus') ?>" class="page-header-icon page-header-icon-delete" title="Hapus Surat">
             <i class="bi bi-trash"></i>
         </a>
