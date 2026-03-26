@@ -1198,9 +1198,14 @@ class ContentController extends ProtectedController
 
         $model = new PerangkatDesaModel();
         
+        $jabatan = trim($this->request->getPost('jabatan'));
+        if (strtolower($jabatan) === 'kepala desa') {
+            return redirect()->back()->withInput()->with('error', 'Tidak dapat menambahkan Kepala Desa baru.');
+        }
+
         $data = [
             'nama' => $this->request->getPost('nama'),
-            'jabatan' => $this->request->getPost('jabatan'),
+            'jabatan' => $jabatan,
             'kontak' => $this->request->getPost('kontak'),
         ];
 
@@ -1264,9 +1269,22 @@ class ContentController extends ProtectedController
             return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
 
+        $jabatan = trim($this->request->getPost('jabatan'));
+        $isKepalaDesa = (strtolower($item['jabatan']) === 'kepala desa');
+
+        if (strtolower($jabatan) === 'kepala desa') {
+            $jabatan = 'Kepala Desa';
+        }
+
+        if ($isKepalaDesa) {
+            $jabatan = 'Kepala Desa';
+        } elseif (strtolower($jabatan) === 'kepala desa') {
+            return redirect()->back()->withInput()->with('error', 'Tidak dapat mengubah perangkat desa menjadi Kepala Desa.');
+        }
+
         $data = [
             'nama' => $this->request->getPost('nama'),
-            'jabatan' => $this->request->getPost('jabatan'),
+            'jabatan' => $jabatan,
             'kontak' => $this->request->getPost('kontak'),
         ];
 
@@ -1335,6 +1353,9 @@ class ContentController extends ProtectedController
         $item = $model->find($id);
 
         if ($item) {
+            if (strtolower($item['jabatan']) === 'kepala desa') {
+                return redirect()->back()->with('error', 'Data Kepala Desa tidak dapat dihapus.');
+            }
             // Hapus foto jika ada
             if ($item['foto']) {
                 $file = FCPATH . ltrim($item['foto'], '/');

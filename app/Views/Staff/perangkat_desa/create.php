@@ -34,7 +34,7 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Nama <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="nama" value="<?= old('nama') ?>" required>
+                    <input type="text" class="form-control" name="nama" value="<?= old('nama') ?>" pattern="[A-Za-z\s.,'-]+" title="Hanya huruf, spasi, titik, koma, dan kutip yang diizinkan" maxlength="150" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Jabatan <span class="text-danger">*</span></label>
@@ -84,7 +84,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('form').addEventListener('submit', function(e) {
         if (fotoInput.files[0] && fotoInput.files[0].size > MAX_FILE_SIZE) {
             e.preventDefault();
-            alert('Harap perbaiki kesalahan pada form sebelum menyimpan.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Validasi Gagal',
+                text: 'Harap perbaiki kesalahan pada form sebelum menyimpan.',
+                confirmButtonColor: '#0d6efd'
+            });
         }
     });
 });
