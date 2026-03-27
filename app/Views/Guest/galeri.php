@@ -282,7 +282,6 @@ function loadAlbums(page = 1) {
             // Render albums
             data.albums.forEach(album => {
                 const albumMedia = data.albumMedia[album.id] || '';
-                const imageUrl = albumMedia ? `<?= base_url() ?>/${albumMedia}` : 'https://via.placeholder.com/600x400?text=Galeri+Desa';
                 
                 // Date formatting
                 const dateObj = new Date(album.tanggal_waktu);
@@ -295,11 +294,15 @@ function loadAlbums(page = 1) {
                 // Use a transparent placeholder or low-res placeholder initially
                 const placeholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
+                const imageHtml = albumMedia
+                    ? `<img src="${placeholder}" data-src="<?= base_url() ?>/${albumMedia}" alt="${escapeHtml(album.nama_album)}" class="lazy-img" style="opacity: 0; transition: opacity 0.5s ease-in-out, transform 0.6s ease;">`
+                    : `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light position-absolute top-0 start-0"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#9ca3af" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg></div>`;
+
                 const albumCard = `
                     <div class="col-6 col-md-6 col-lg-4">
                         <div class="glass-card h-100 position-relative">
                             <div class="glass-card-img">
-                                <img src="${placeholder}" data-src="${imageUrl}" alt="${escapeHtml(album.nama_album)}" class="lazy-img" style="opacity: 0; transition: opacity 0.5s ease-in-out, transform 0.6s ease;">
+                                ${imageHtml}
                                 <div class="glass-date-badge">
                                     <span class="day">${day}</span>
                                     <span class="month">${month}</span>

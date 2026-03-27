@@ -1,7 +1,7 @@
 <?= $this->extend('Admin/layout') ?>
 
 <?= $this->section('content') ?>
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div class="d-flex align-items-center gap-3">
         <div class="page-header-icon">
             <i class="bi bi-bell"></i>
@@ -10,6 +10,11 @@
             <h4 class="mb-0">Notifikasi</h4>
             <div class="text-muted small mt-1">Daftar akun baru yang terdaftar di sistem.</div>
         </div>
+    </div>
+    <div>
+        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="markAllAsRead()">
+            <i class="bi bi-check2-all me-1"></i> Tandai semua telah dibaca
+        </button>
     </div>
 </div>
 
@@ -54,7 +59,7 @@ function loadNotifications() {
 
         if (data.success && data.notifications.length > 0) {
             data.notifications.forEach(notif => {
-                const accountUrl = `<?= base_url('/admin/akun') ?>`;
+                const notifUrl = `<?= base_url('/admin/notifikasi') ?>/${notif.id}/read`;
                 
                 const dateObj = new Date(notif.created_at);
                 const day = String(dateObj.getDate()).padStart(2, '0');
@@ -66,17 +71,19 @@ function loadNotifications() {
                 
 
 
+                const isRead = parseInt(notif.is_read) === 1;
+                
                 const html = `
-                    <a href="${accountUrl}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+                    <a href="${notifUrl}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start ${!isRead ? 'bg-light' : ''}">
                         <div>
-                            <div class="fw-semibold text-primary">
+                            <div class="fw-semibold ${!isRead ? 'text-primary' : 'text-dark'}">
                                 Pendaftaran Akun Baru: ${escapeHtml(notif.username)}
                             </div>
                             <div class="small text-muted mt-1">Email: ${escapeHtml(notif.email)} | Status: ${escapeHtml(notif.status)}</div>
                         </div>
                         <div class="text-end">
                             <div class="small text-muted">${dateStr}</div>
-                            <span class="badge bg-primary rounded-pill mt-2">Akun Baru</span>
+                            ${!isRead ? '<span class="badge bg-primary rounded-pill mt-2">Akun Baru</span>' : ''}
                         </div>
                     </a>
                 `;
@@ -96,6 +103,36 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function markAllAsRead() {
+    const btn = document.querySelector('button[onclick="markAllAsRead()"]');
+    if (btn) btn.disabled = true;
+
+    fetch('<?= base_url('/admin/notifikasi/mark-all-read') ?>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({
+            [csrfToken]: csrfHash
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data[csrfToken]) {
+            csrfHash = data[csrfToken];
+        }
+        if (data.success) {
+            loadNotifications();
+        }
+        if (btn) btn.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error marking all as read:', error);
+        if (btn) btn.disabled = false;
+    });
 }
 </script>
 <?= $this->endSection() ?>

@@ -59,6 +59,7 @@ $routes->group('user', static function ($routes) {
 
     $routes->get('notifikasi', 'User\NotificationController::index');
     $routes->post('notifikasi/api', 'User\NotificationController::api');
+    $routes->post('notifikasi/mark-all-read', 'User\NotificationController::markAllRead');
     $routes->get('notifikasi/(:num)/read', 'User\NotificationController::markRead/$1');
 
     $routes->get('surat/lampiran/(:num)', 'User\LetterController::serveAttachment/$1');
@@ -120,6 +121,7 @@ $routes->group('staff', static function ($routes) {
 
     $routes->get('notifikasi', 'Staff\NotificationController::index');
     $routes->post('notifikasi/api', 'Staff\NotificationController::api');
+    $routes->post('notifikasi/mark-all-read', 'Staff\NotificationController::markAllRead');
     $routes->get('notifikasi/(:num)/read', 'Staff\NotificationController::markRead/$1');
 
     $routes->get('surat/lampiran/(:num)', 'Staff\LetterController::serveAttachment/$1');
@@ -142,4 +144,6 @@ $routes->group('admin', static function ($routes) {
     
     $routes->get('notifikasi', 'Admin\NotificationController::index');
     $routes->post('notifikasi/api', 'Admin\NotificationController::api');
+    $routes->post('notifikasi/mark-all-read', 'Admin\NotificationController::markAllRead');
+    $routes->get('notifikasi/(:num)/read', 'Admin\NotificationController::markRead/$1');
 });

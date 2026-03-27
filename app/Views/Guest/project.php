@@ -349,7 +349,6 @@ function loadProjects(page = 1) {
             
             // Render projects
             data.projects.forEach(project => {
-                const imageUrl = project.thumbnail ? `<?= base_url() ?>/${project.thumbnail}` : 'https://via.placeholder.com/600x400?text=Project+Desa';
                 const dateObj = new Date(project.tanggal_waktu);
                 // Format to e.g. "10 Jan 2026"
                 const formattedDate = dateObj.toLocaleDateString('id-ID', {
@@ -375,11 +374,15 @@ function loadProjects(page = 1) {
                 // Use a transparent placeholder
                 const placeholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
+                const imageHtml = project.thumbnail
+                    ? `<img src="${placeholder}" data-src="<?= base_url() ?>/${project.thumbnail}" alt="${escapeHtml(project.judul)}" class="lazy-img" style="opacity: 0; transition: opacity 0.5s ease-in-out, transform 0.6s ease;">`
+                    : `<div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light position-absolute top-0 start-0"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#9ca3af" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg></div>`;
+
                 const projectCard = `
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 border-0 shadow-sm project-card-modern position-relative">
                             <div class="project-card-img">
-                                <img src="${placeholder}" data-src="${imageUrl}" alt="${escapeHtml(project.judul)}" class="lazy-img" style="opacity: 0; transition: opacity 0.5s ease-in-out, transform 0.6s ease;">
+                                ${imageHtml}
                                 <div class="project-date-badge">
                                     ${formattedDate}
                                 </div>

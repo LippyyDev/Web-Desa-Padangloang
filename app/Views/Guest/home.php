@@ -174,7 +174,11 @@
                 <div class="col-6 col-md-6 col-lg-4">
                     <div class="glass-card h-100 position-relative">
                         <div class="glass-card-img">
-                            <img src="<?= $album['thumbnail'] ? base_url($album['thumbnail']) : 'https://via.placeholder.com/600x400?text=Galeri+Desa' ?>" alt="<?= esc($album['nama_album']) ?>">
+                            <?php if ($album['thumbnail']): ?>
+                                <img src="<?= base_url($album['thumbnail']) ?>" alt="<?= esc($album['nama_album']) ?>">
+                            <?php else: ?>
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light position-absolute top-0 start-0"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#9ca3af" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg></div>
+                            <?php endif; ?>
                             <div class="glass-date-badge">
                                 <span class="day"><?= date('d', strtotime($album['tanggal_waktu'])) ?></span>
                                 <span class="month"><?= date('M', strtotime($album['tanggal_waktu'])) ?></span>
@@ -227,7 +231,11 @@
                         <div class="news-img-wrapper">
                             <!-- Fallback logic for image -->
                             <?php $img = $item['gambar'] ?? $item['thumbnail'] ?? null; ?>
-                            <img src="<?= $img ? base_url($img) : 'https://via.placeholder.com/600x400?text=Berita+Desa' ?>" alt="<?= esc($item['judul']) ?>">
+                            <?php if ($img): ?>
+                                <img src="<?= base_url($img) ?>" alt="<?= esc($item['judul']) ?>">
+                            <?php else: ?>
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light position-absolute top-0 start-0"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#9ca3af" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg></div>
+                            <?php endif; ?>
                             <div class="news-date-floating">
                                 <span class="fw-bold"><?= date('d', strtotime($item['tanggal_waktu'])) ?></span>
                                 <small><?= date('M', strtotime($item['tanggal_waktu'])) ?></small>
@@ -292,7 +300,11 @@
                         <div class="project-card-img">
                             <!-- Fallback logic for image -->
                             <?php $img = $project['gambar'] ?? $project['thumbnail'] ?? null; ?>
-                            <img src="<?= $img ? base_url($img) : 'https://via.placeholder.com/600x400?text=Project+Desa' ?>" alt="<?= esc($project['judul']) ?>">
+                            <?php if ($img): ?>
+                                <img src="<?= base_url($img) ?>" alt="<?= esc($project['judul']) ?>">
+                            <?php else: ?>
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light position-absolute top-0 start-0"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#9ca3af" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg></div>
+                            <?php endif; ?>
                             <div class="project-date-badge">
                                 <?= date('d M Y', strtotime($project['tanggal_waktu'])) ?>
                             </div>

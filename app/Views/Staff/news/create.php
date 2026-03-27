@@ -98,7 +98,7 @@
                     [{ 'font': [] }],
                     [{ 'align': [] }],
                     ['clean'],
-                    ['link', 'image', 'video']
+                    ['link']
                 ]
             }
         });

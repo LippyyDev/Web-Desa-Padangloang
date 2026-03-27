@@ -1,7 +1,7 @@
 <?= $this->extend('Staff/layout') ?>
 
 <?= $this->section('content') ?>
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div class="d-flex align-items-center gap-3">
         <div class="page-header-icon">
             <i class="bi bi-bell"></i>
@@ -10,6 +10,11 @@
             <h4 class="mb-0">Notifikasi</h4>
             <div class="text-muted small mt-1">Info terbaru terkait surat.</div>
         </div>
+    </div>
+    <div>
+        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="markAllAsRead()">
+            <i class="bi bi-check2-all me-1"></i> Tandai semua telah dibaca
+        </button>
     </div>
 </div>
 
@@ -95,6 +100,36 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function markAllAsRead() {
+    const btn = document.querySelector('button[onclick="markAllAsRead()"]');
+    if (btn) btn.disabled = true;
+
+    fetch('<?= base_url('/staff/notifikasi/mark-all-read') ?>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({
+            [csrfToken]: csrfHash
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data[csrfToken]) {
+            csrfHash = data[csrfToken];
+        }
+        if (data.success) {
+            loadNotifications();
+        }
+        if (btn) btn.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error marking all as read:', error);
+        if (btn) btn.disabled = false;
+    });
 }
 </script>
 <?= $this->endSection() ?>

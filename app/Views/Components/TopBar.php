@@ -8,10 +8,27 @@ $userProfileModel = new \App\Models\UserProfileModel();
 $notificationModel = new \App\Models\NotificationModel();
 
 $userId = $currentUser['id'] ?? null;
+$userRole = $currentUser['role'] ?? '';
 $profile = $userId ? $userProfileModel->find($userId) : null;
-$unreadCount = $userId ? $notificationModel->where('user_id', $userId)
-    ->where('is_read', 0)
-    ->countAllResults() : 0;
+
+if ($userRole === 'admin') {
+    $userModelForNotif = new \App\Models\UserModel();
+    $lastReadTime = session()->get('admin_notif_read_time') ?? 0;
+    $readAccounts = session()->get('admin_read_accounts') ?? [];
+    
+    $builder = $userModelForNotif->where('role', 'user')
+        ->where('created_at >', date('Y-m-d H:i:s', $lastReadTime));
+        
+    if (!empty($readAccounts)) {
+        $builder->whereNotIn('id', $readAccounts);
+    }
+    
+    $unreadCount = $builder->countAllResults();
+} else {
+    $unreadCount = $userId ? $notificationModel->where('user_id', $userId)
+        ->where('is_read', 0)
+        ->countAllResults() : 0;
+}
 
 $userName = ($profile && !empty($profile['nama_lengkap'])) ? $profile['nama_lengkap'] : ($currentUser['username'] ?? 'User');
 $userPhoto = ($profile && !empty($profile['foto_profil'])) 

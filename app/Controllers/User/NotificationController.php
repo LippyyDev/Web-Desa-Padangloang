@@ -55,6 +55,27 @@ class NotificationController extends ProtectedController
 
         return redirect()->to('/user/notifikasi');
     }
+
+    public function markAllRead()
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $notifModel = new NotificationModel();
+        
+        // Update all unread notifications for this user
+        $notifModel->where('user_id', $this->currentUser['id'])
+                   ->where('is_read', 0)
+                   ->set(['is_read' => 1, 'read_at' => date('Y-m-d H:i:s')])
+                   ->update();
+
+        return $this->response->setJSON([
+            csrf_token() => csrf_hash(),
+            'success' => true,
+            'message' => 'Semua notifikasi telah ditandai dibaca'
+        ]);
+    }
 }
 
 
