@@ -23,13 +23,16 @@ class AuthController extends BaseController
 
         // Check if IP is currently locked out for rate limiting
         $cache = \Config\Services::cache();
-        $lockKey = 'login_lock_' . md5($this->request->getIPAddress());
-        $isLocked = (bool) $cache->get($lockKey);
+        $lockKey       = 'login_lock_' . md5($this->request->getIPAddress());
+        $lockExpiryKey = 'login_lock_expiry_' . md5($this->request->getIPAddress());
+        $isLocked      = (bool) $cache->get($lockKey);
+        $lockExpiry    = $isLocked ? (int) ($cache->get($lockExpiryKey) ?? 0) : 0;
 
         return view('Guest/auth/login', [
             'hideFooter' => true,
             'hideNavbar' => true,
             'isLocked'   => $isLocked,
+            'lockExpiry' => $lockExpiry,
         ]);
     }
 
@@ -62,7 +65,9 @@ class AuthController extends BaseController
 
             if ($failCount >= 3) {
                 // Lock out this IP for 5 minutes (300 seconds)
-                $cache->save($lockKey, true, 300);
+                $lockDuration = 300;
+                $cache->save($lockKey, true, $lockDuration);
+                $cache->save('login_lock_expiry_' . md5($ipAddress), time() + $lockDuration, $lockDuration);
                 $cache->delete($throttleKey);
                 return redirect()->back()->withInput()
                     ->with('error', 'Terlalu banyak percobaan login. Silakan coba lagi dalam 5 menit.');

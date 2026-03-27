@@ -68,7 +68,13 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Lahir</label>
-                    <input type="date" class="form-control" name="tanggal_lahir" value="<?= old('tanggal_lahir', esc($profile['tanggal_lahir'] ?? '')) ?>">
+                    <?php
+                        $tanggalLahirEdit = $profile['tanggal_lahir'] ?? '';
+                        if ($tanggalLahirEdit === '0000-00-00' || empty($tanggalLahirEdit)) {
+                            $tanggalLahirEdit = '';
+                        }
+                    ?>
+                    <input type="date" class="form-control" name="tanggal_lahir" value="<?= old('tanggal_lahir', esc($tanggalLahirEdit)) ?>">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Agama</label>
@@ -104,14 +110,15 @@
         </h5>
         <form method="post" action="<?= base_url('/admin/akun/' . $user['id'] . '/ubah-password') ?>">
             <?= csrf_field() ?>
+            <input type="text" name="username_hint" value="<?= esc($user['username']) ?>" autocomplete="username" style="display:none;" aria-hidden="true">
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Masukkan Password Baru</label>
-                    <input type="password" class="form-control" name="new_password" required>
+                    <input type="password" class="form-control" name="new_password" autocomplete="new-password" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Konfirmasi Password Baru</label>
-                    <input type="password" class="form-control" name="confirm_password" required>
+                    <input type="password" class="form-control" name="confirm_password" autocomplete="new-password" required>
                 </div>
             </div>
             <div class="mt-4">

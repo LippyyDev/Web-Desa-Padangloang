@@ -103,7 +103,7 @@
                 <div class="col-md-12">
                     <label class="form-label">Masukkan Password Lama</label>
                     <div class="input-group password-group">
-                        <input type="password" class="form-control" name="old_password" required>
+                        <input type="password" class="form-control" name="old_password" autocomplete="current-password" required>
                         <button class="btn btn-outline-secondary btn-toggle-pass" type="button">
                             <i class="bi bi-eye"></i>
                         </button>
@@ -112,7 +112,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Masukkan Password Baru</label>
                     <div class="input-group password-group">
-                        <input type="password" class="form-control" name="new_password" required>
+                        <input type="password" class="form-control" name="new_password" autocomplete="new-password" required>
                         <button class="btn btn-outline-secondary btn-toggle-pass" type="button">
                             <i class="bi bi-eye"></i>
                         </button>
@@ -121,7 +121,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Konfirmasi Password Baru</label>
                     <div class="input-group password-group">
-                        <input type="password" class="form-control" name="confirm_password" required>
+                        <input type="password" class="form-control" name="confirm_password" autocomplete="new-password" required>
                         <button class="btn btn-outline-secondary btn-toggle-pass" type="button">
                             <i class="bi bi-eye"></i>
                         </button>

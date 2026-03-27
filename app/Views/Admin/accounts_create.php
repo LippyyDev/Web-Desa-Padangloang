@@ -24,7 +24,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Username</label>
-                    <input type="text" class="form-control" name="username" required maxlength="50" placeholder="Maksimal 50 karakter">
+                    <input type="text" class="form-control" name="username" autocomplete="username" required maxlength="50" placeholder="Maksimal 50 karakter">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Email</label>
@@ -32,7 +32,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Password</label>
-                    <input type="password" class="form-control" name="password" required>
+                    <input type="password" class="form-control" name="password" autocomplete="new-password" required>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Role</label>

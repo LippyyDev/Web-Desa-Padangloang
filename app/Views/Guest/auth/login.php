@@ -20,7 +20,7 @@
                 
                 <div class="mb-4">
                     <label class="auth-form-label">Email atau Username</label>
-                    <input type="text" class="auth-form-control" name="identity" value="<?= old('identity') ?>" placeholder="contoh@email.com" required <?= !empty($isLocked) ? 'disabled' : '' ?>>
+                    <input type="text" class="auth-form-control" name="identity" value="<?= old('identity') ?>" placeholder="contoh@email.com" autocomplete="username" required <?= !empty($isLocked) ? 'disabled' : '' ?>>
                 </div>
                 
                 <div class="mb-4">
@@ -29,14 +29,20 @@
                         <a href="<?= base_url('/forgot-password') ?>" class="auth-link small">Lupa password?</a>
                     </div>
                     <div class="password-wrapper">
-                        <input type="password" class="auth-form-control" name="password" placeholder="••••••••" required <?= !empty($isLocked) ? 'disabled' : '' ?>>
+                        <input type="password" class="auth-form-control" name="password" placeholder="••••••••" autocomplete="current-password" required <?= !empty($isLocked) ? 'disabled' : '' ?>>
                         <button type="button" class="password-toggle">
                             <i class="bi bi-eye-slash"></i>
                         </button>
                     </div>
                 </div>
 
-                <button class="btn-auth-primary mb-4" type="submit" <?= !empty($isLocked) ? 'disabled style="opacity:0.5;background:#6b7280;cursor:not-allowed;pointer-events:none;"' : '' ?>>Masuk Sekarang</button>
+                <button class="btn-auth-primary mb-4" type="submit" id="btnSubmit" <?= !empty($isLocked) ? 'disabled' : '' ?>>
+                    <?php if (!empty($isLocked)): ?>
+                        <span id="countdownText">Coba lagi dalam <span id="countdownTimer">--:--</span></span>
+                    <?php else: ?>
+                        Masuk Sekarang
+                    <?php endif; ?>
+                </button>
             </form>
             
             <div class="auth-divider">
@@ -90,6 +96,36 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <script src="<?= base_url('assets/js/guest/auth-background.js') ?>"></script>
 <script src="<?= base_url('assets/js/guest/password-toggle.js') ?>"></script>
+<?php if (!empty($isLocked) && !empty($lockExpiry)): ?>
+<script>
+(function() {
+    const expiry = <?= (int) $lockExpiry ?>;
+    const btn    = document.getElementById('btnSubmit');
+    const timer  = document.getElementById('countdownTimer');
+
+    btn.style.opacity = '0.5';
+    btn.style.background = '#6b7280';
+    btn.style.cursor = 'not-allowed';
+    btn.style.pointerEvents = 'none';
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function tick() {
+        const remaining = expiry - Math.floor(Date.now() / 1000);
+        if (remaining <= 0) {
+            location.reload();
+            return;
+        }
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        timer.textContent = pad(m) + ':' + pad(s);
+    }
+
+    tick();
+    setInterval(tick, 1000);
+})();
+</script>
+<?php endif; ?>
 <?= $this->endSection() ?>
 
 
