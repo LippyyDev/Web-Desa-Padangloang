@@ -230,32 +230,21 @@ class ContentController extends ProtectedController
 
         $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
-            // Gunakan whitelist untuk ekstensi gambar yang aman
-            $extension = strtolower($thumb->getClientExtension());
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                return redirect()->back()->with('error', 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.');
+            $imgError = $this->validateImageFile($thumb);
+            if ($imgError !== null) {
+                return redirect()->back()->with('error', $imgError);
             }
-
+            $ext = strtolower(pathinfo($thumb->getClientName(), PATHINFO_EXTENSION));
             $path = FCPATH . 'uploads/gallery';
             $this->ensureUploadPath($path);
-            
-            // Upload file sementara
             $tempName = $thumb->getRandomName();
             $thumb->move($path, $tempName);
             $tempPath = $path . '/' . $tempName;
-            
-            // Fix EXIF orientation before conversion
             $this->fixImageOrientation($tempPath);
-            
-            // Convert ke WebP (handle source that is already WEBP)
             $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
-            $webpPath = $path . '/' . $webpName;
-            
-            if (!$this->convertToWebp($tempPath, $webpPath, $extension)) {
-                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail. Pastikan file adalah gambar yang valid.');
+            if (!$this->convertToWebp($tempPath, $path . '/' . $webpName, $ext)) {
+                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail.');
             }
-            
             $data['thumbnail'] = 'uploads/gallery/' . $webpName;
         }
 
@@ -285,16 +274,13 @@ class ContentController extends ProtectedController
 
         $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
-            // Gunakan whitelist untuk ekstensi gambar yang aman
-            $extension = strtolower($thumb->getClientExtension());
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                return redirect()->back()->with('error', 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.');
+            $imgError = $this->validateImageFile($thumb);
+            if ($imgError !== null) {
+                return redirect()->back()->with('error', $imgError);
             }
-
+            $ext = strtolower(pathinfo($thumb->getClientName(), PATHINFO_EXTENSION));
             $path = FCPATH . 'uploads/gallery';
             $this->ensureUploadPath($path);
-            
             // Hapus thumbnail lama jika ada
             if ($album['thumbnail']) {
                 $oldFile = FCPATH . ltrim($album['thumbnail'], '/');
@@ -302,23 +288,14 @@ class ContentController extends ProtectedController
                     @unlink($oldFile);
                 }
             }
-            
-            // Upload file sementara
             $tempName = $thumb->getRandomName();
             $thumb->move($path, $tempName);
             $tempPath = $path . '/' . $tempName;
-            
-            // Fix EXIF orientation before conversion
             $this->fixImageOrientation($tempPath);
-            
-            // Convert ke WebP (handle source that is already WEBP)
             $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
-            $webpPath = $path . '/' . $webpName;
-            
-            if (!$this->convertToWebp($tempPath, $webpPath, $extension)) {
-                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail. Pastikan file adalah gambar yang valid.');
+            if (!$this->convertToWebp($tempPath, $path . '/' . $webpName, $ext)) {
+                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail.');
             }
-            
             $data['thumbnail'] = 'uploads/gallery/' . $webpName;
         }
 
@@ -369,26 +346,17 @@ class ContentController extends ProtectedController
             if (!$file->isValid()) {
                 continue;
             }
-            
-            // Gunakan whitelist untuk ekstensi gambar yang aman
-            $extension = strtolower($file->getClientExtension());
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                continue; // Skip file yang tidak valid
+            // Validasi berlapis: ukuran, nama file, MIME, magic bytes, content scan
+            if ($this->validateImageFile($file) !== null) {
+                continue;
             }
-            
-            // Upload file sementara
+            $extension = strtolower(pathinfo($file->getClientName(), PATHINFO_EXTENSION));
             $tempName = $file->getRandomName();
             $file->move($path, $tempName);
             $tempPath = $path . '/' . $tempName;
-            
-            // Fix EXIF orientation before conversion
             $this->fixImageOrientation($tempPath);
-            
-            // Convert ke WebP (handle source that is already WEBP)
             $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
             $webpPath = $path . '/' . $webpName;
-            
             if ($this->convertToWebp($tempPath, $webpPath, $extension)) {
                 $mediaModel->insert([
                     'album_id'   => $albumId,
@@ -396,7 +364,6 @@ class ContentController extends ProtectedController
                     'media_path' => 'uploads/gallery/' . $webpName,
                 ]);
             }
-            // Skip file yang gagal dikonversi
         }
 
         $videoLinks = $this->request->getPost('video_links');
@@ -586,16 +553,22 @@ class ContentController extends ProtectedController
 
         $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
-            $extension = strtolower($thumb->getClientExtension());
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                return redirect()->back()->with('error', 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.');
+            $imgError = $this->validateImageFile($thumb);
+            if ($imgError !== null) {
+                return redirect()->back()->with('error', $imgError);
             }
+            $ext = strtolower(pathinfo($thumb->getClientName(), PATHINFO_EXTENSION));
             $path = FCPATH . 'uploads/news';
             $this->ensureUploadPath($path);
-            $name = $thumb->getRandomName();
-            $thumb->move($path, $name);
-            $data['thumbnail'] = 'uploads/news/' . $name;
+            $tempName = $thumb->getRandomName();
+            $thumb->move($path, $tempName);
+            $tempPath = $path . '/' . $tempName;
+            $this->fixImageOrientation($tempPath);
+            $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
+            if (!$this->convertToWebp($tempPath, $path . '/' . $webpName, $ext)) {
+                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail.');
+            }
+            $data['thumbnail'] = 'uploads/news/' . $webpName;
         }
 
         $newsId = $newsModel->insert($data, true);
@@ -625,16 +598,22 @@ class ContentController extends ProtectedController
 
         $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
-            $extension = strtolower($thumb->getClientExtension());
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                return redirect()->back()->with('error', 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.');
+            $imgError = $this->validateImageFile($thumb);
+            if ($imgError !== null) {
+                return redirect()->back()->with('error', $imgError);
             }
+            $ext = strtolower(pathinfo($thumb->getClientName(), PATHINFO_EXTENSION));
             $path = FCPATH . 'uploads/news';
             $this->ensureUploadPath($path);
-            $name = $thumb->getRandomName();
-            $thumb->move($path, $name);
-            $data['thumbnail'] = 'uploads/news/' . $name;
+            $tempName = $thumb->getRandomName();
+            $thumb->move($path, $tempName);
+            $tempPath = $path . '/' . $tempName;
+            $this->fixImageOrientation($tempPath);
+            $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
+            if (!$this->convertToWebp($tempPath, $path . '/' . $webpName, $ext)) {
+                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail.');
+            }
+            $data['thumbnail'] = 'uploads/news/' . $webpName;
         }
 
         $newsModel->update($id, $data);
@@ -682,18 +661,24 @@ class ContentController extends ProtectedController
                 if (!$file->isValid()) {
                     continue;
                 }
-                $extension = strtolower($file->getClientExtension());
-                $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-                if (!in_array($extension, $allowedExtensions)) {
+                // Validasi berlapis: ukuran, nama file, MIME, magic bytes, content scan
+                if ($this->validateImageFile($file) !== null) {
                     continue;
                 }
-                $name = $file->getRandomName();
-                $file->move($path, $name);
-                $mediaModel->insert([
-                    'news_id'    => $newsId,
-                    'media_type' => 'foto',
-                    'media_path' => 'uploads/news/' . $name,
-                ]);
+                $extension = strtolower(pathinfo($file->getClientName(), PATHINFO_EXTENSION));
+                $tempName = $file->getRandomName();
+                $file->move($path, $tempName);
+                $tempPath = $path . '/' . $tempName;
+                $this->fixImageOrientation($tempPath);
+                $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
+                $webpPath = $path . '/' . $webpName;
+                if ($this->convertToWebp($tempPath, $webpPath, $extension)) {
+                    $mediaModel->insert([
+                        'news_id'    => $newsId,
+                        'media_type' => 'foto',
+                        'media_path' => 'uploads/news/' . $webpName,
+                    ]);
+                }
             }
         }
 
@@ -902,16 +887,21 @@ class ContentController extends ProtectedController
 
         $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
-            $extension = strtolower($thumb->getClientExtension());
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                return redirect()->back()->with('error', 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.');
+            $imgError = $this->validateImageFile($thumb);
+            if ($imgError !== null) {
+                return redirect()->back()->with('error', $imgError);
             }
+            $ext = strtolower(pathinfo($thumb->getClientName(), PATHINFO_EXTENSION));
             $path = FCPATH . 'uploads/projects';
             $this->ensureUploadPath($path);
-            $name = $thumb->getRandomName();
-            $thumb->move($path, $name);
-            $data['thumbnail'] = 'uploads/projects/' . $name;
+            $tempName = $thumb->getRandomName();
+            $thumb->move($path, $tempName);
+            $tempPath = $path . '/' . $tempName;
+            $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
+            if (!$this->convertToWebp($tempPath, $path . '/' . $webpName, $ext)) {
+                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail.');
+            }
+            $data['thumbnail'] = 'uploads/projects/' . $webpName;
         }
 
         $projectId = $projectModel->insert($data, true);
@@ -943,16 +933,21 @@ class ContentController extends ProtectedController
 
         $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
-            $extension = strtolower($thumb->getClientExtension());
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                return redirect()->back()->with('error', 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.');
+            $imgError = $this->validateImageFile($thumb);
+            if ($imgError !== null) {
+                return redirect()->back()->with('error', $imgError);
             }
+            $ext = strtolower(pathinfo($thumb->getClientName(), PATHINFO_EXTENSION));
             $path = FCPATH . 'uploads/projects';
             $this->ensureUploadPath($path);
-            $name = $thumb->getRandomName();
-            $thumb->move($path, $name);
-            $data['thumbnail'] = 'uploads/projects/' . $name;
+            $tempName = $thumb->getRandomName();
+            $thumb->move($path, $tempName);
+            $tempPath = $path . '/' . $tempName;
+            $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
+            if (!$this->convertToWebp($tempPath, $path . '/' . $webpName, $ext)) {
+                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail.');
+            }
+            $data['thumbnail'] = 'uploads/projects/' . $webpName;
         }
 
         $projectModel->update($id, $data);
@@ -1000,18 +995,23 @@ class ContentController extends ProtectedController
                 if (!$file->isValid()) {
                     continue;
                 }
-                $extension = strtolower($file->getClientExtension());
-                $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-                if (!in_array($extension, $allowedExtensions)) {
-                    continue;
+                // Validasi berlapis: ukuran, nama file, MIME, magic bytes, content scan
+                if ($this->validateImageFile($file) !== null) {
+                    continue; // Skip file tidak valid
                 }
-                $name = $file->getRandomName();
-                $file->move($path, $name);
-                $mediaModel->insert([
-                    'project_id' => $projectId,
-                    'media_type' => 'foto',
-                    'media_path' => 'uploads/projects/' . $name,
-                ]);
+                $extension = strtolower(pathinfo($file->getClientName(), PATHINFO_EXTENSION));
+                $tempName = $file->getRandomName();
+                $file->move($path, $tempName);
+                $tempPath = $path . '/' . $tempName;
+                $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
+                $webpPath = $path . '/' . $webpName;
+                if ($this->convertToWebp($tempPath, $webpPath, $extension)) {
+                    $mediaModel->insert([
+                        'project_id' => $projectId,
+                        'media_type' => 'foto',
+                        'media_path' => 'uploads/projects/' . $webpName,
+                    ]);
+                }
             }
         }
 
@@ -1209,46 +1209,25 @@ class ContentController extends ProtectedController
             'kontak' => $this->request->getPost('kontak'),
         ];
 
+        
         $foto = $this->request->getFile('foto');
         if ($foto && $foto->isValid()) {
-            // Gunakan whitelist untuk ekstensi gambar yang aman
-            $extension = strtolower($foto->getClientExtension());
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                return redirect()->back()->with('error', 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.');
+            $imgError = $this->validateImageFile($foto);
+            if ($imgError !== null) {
+                return redirect()->back()->with('error', $imgError);
             }
-
+            $ext = strtolower(pathinfo($foto->getClientName(), PATHINFO_EXTENSION));
             $path = FCPATH . 'uploads/perangkat_desa';
             $this->ensureUploadPath($path);
-            
-            // Upload file sementara
             $tempName = $foto->getRandomName();
             $foto->move($path, $tempName);
             $tempPath = $path . '/' . $tempName;
-            
-            // Convert ke WebP
-            $image = \Config\Services::image();
+            $this->fixImageOrientation($tempPath);
             $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
-            $webpPath = $path . '/' . $webpName;
-            
-            try {
-                $image->withFile($tempPath)
-                    ->convert(IMAGETYPE_WEBP)
-                    ->save($webpPath, 85); // Quality 85
-                
-                // Hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                
-                $data['foto'] = 'uploads/perangkat_desa/' . $webpName;
-            } catch (\Exception $e) {
-                // Jika konversi gagal, hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
+            if (!$this->convertToWebp($tempPath, $path . '/' . $webpName, $ext)) {
                 return redirect()->back()->with('error', 'Gagal memproses gambar. Pastikan file adalah gambar yang valid.');
             }
+            $data['foto'] = 'uploads/perangkat_desa/' . $webpName;
         }
 
         $model->insert($data);
@@ -1290,13 +1269,10 @@ class ContentController extends ProtectedController
 
         $foto = $this->request->getFile('foto');
         if ($foto && $foto->isValid()) {
-            // Gunakan whitelist untuk ekstensi gambar yang aman
-            $extension = strtolower($foto->getClientExtension());
-            $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-            if (!in_array($extension, $allowedExtensions)) {
-                return redirect()->back()->with('error', 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.');
+            $imgError = $this->validateImageFile($foto);
+            if ($imgError !== null) {
+                return redirect()->back()->with('error', $imgError);
             }
-
             // Hapus foto lama jika ada
             if ($item['foto']) {
                 $oldFile = FCPATH . ltrim($item['foto'], '/');
@@ -1304,38 +1280,18 @@ class ContentController extends ProtectedController
                     @unlink($oldFile);
                 }
             }
-
+            $ext = strtolower(pathinfo($foto->getClientName(), PATHINFO_EXTENSION));
             $path = FCPATH . 'uploads/perangkat_desa';
             $this->ensureUploadPath($path);
-            
-            // Upload file sementara
             $tempName = $foto->getRandomName();
             $foto->move($path, $tempName);
             $tempPath = $path . '/' . $tempName;
-            
-            // Convert ke WebP
-            $image = \Config\Services::image();
+            $this->fixImageOrientation($tempPath);
             $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
-            $webpPath = $path . '/' . $webpName;
-            
-            try {
-                $image->withFile($tempPath)
-                    ->convert(IMAGETYPE_WEBP)
-                    ->save($webpPath, 85); // Quality 85
-                
-                // Hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                
-                $data['foto'] = 'uploads/perangkat_desa/' . $webpName;
-            } catch (\Exception $e) {
-                // Jika konversi gagal, hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
+            if (!$this->convertToWebp($tempPath, $path . '/' . $webpName, $ext)) {
                 return redirect()->back()->with('error', 'Gagal memproses gambar. Pastikan file adalah gambar yang valid.');
             }
+            $data['foto'] = 'uploads/perangkat_desa/' . $webpName;
         }
 
         $model->update($id, $data);
@@ -1376,6 +1332,134 @@ class ContentController extends ProtectedController
      * where imagecreatefrom* cannot open a WEBP source).
      * Returns true on success, false on failure.
      */
+    /**
+     * Validasi file gambar secara berlapis (8 lapisan).
+     * Mengembalikan string pesan error jika gagal, atau null jika lolos.
+     *
+     * Lapisan:
+     *  1. Batas ukuran 5MB
+     *  2a. Null byte di nama file
+     *  2b. Path traversal di nama file
+     *  2c. Karakter berbahaya di nama file
+     *  2d. Unicode RTL override spoofing
+     *  3.  Ekstensi ganda berbahaya
+     *  4.  Whitelist ekstensi akhir (jpg, jpeg, png, webp)
+     *  5.  Whitelist Client MIME
+     *  6.  Magic bytes validation
+     *  7.  Content scan (21 pola berbahaya)
+     *  8.  WEBP chunk signature deep-check
+     */
+    private function validateImageFile(\CodeIgniter\HTTP\Files\UploadedFile $file): ?string
+    {
+        // 1. Ukuran maks 5MB
+        if ($file->getSize() > 5242880) {
+            return 'Ukuran file melebihi batas maksimal 5MB.';
+        }
+
+        $clientName = $file->getClientName();
+
+        // 2a. Null byte
+        if (strpos($clientName, "\0") !== false) {
+            return 'Nama file tidak valid.';
+        }
+
+        // 2b. Path traversal
+        if (basename($clientName) !== $clientName) {
+            return 'Nama file tidak valid.';
+        }
+
+        // 2c. Karakter berbahaya
+        if (preg_match('/[<>:"\/\\\\|?*\x00-\x1F]/', $clientName)) {
+            return 'Nama file mengandung karakter yang tidak diperbolehkan.';
+        }
+
+        // 2d. Unicode RTL override spoofing
+        if (preg_match('/[\x{200F}\x{202E}\x{202B}\x{202D}]/u', $clientName)) {
+            return 'Nama file mengandung karakter tidak valid.';
+        }
+
+        // 3. Ekstensi ganda berbahaya
+        $dangerousExts = [
+            'php', 'php3', 'php4', 'php5', 'php7', 'phtml', 'phar',
+            'asp', 'aspx', 'jsp', 'exe', 'sh', 'bat', 'cmd', 'py',
+            'rb', 'pl', 'cgi', 'htaccess', 'htpasswd', 'svg', 'shtml', 'pht',
+        ];
+        $nameParts = explode('.', $clientName);
+        if (count($nameParts) > 2) {
+            for ($i = 0; $i < count($nameParts) - 1; $i++) {
+                if (in_array(strtolower($nameParts[$i]), $dangerousExts)) {
+                    return 'Format file tidak diperbolehkan.';
+                }
+            }
+        }
+
+        // 4. Whitelist ekstensi akhir
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+        $ext = strtolower(pathinfo($clientName, PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedExtensions)) {
+            return 'Format file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan WEBP.';
+        }
+
+        // 5. Client MIME whitelist
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!in_array(strtolower(trim($file->getClientMimeType())), $allowedMimes)) {
+            return 'Tipe MIME file tidak diperbolehkan.';
+        }
+
+        // 6. Magic bytes
+        $tmpPath = $file->getTempName();
+        $fh      = @fopen($tmpPath, 'rb');
+        $header  = $fh ? fread($fh, 12) : '';
+        if ($fh) fclose($fh);
+
+        $magicMap = [
+            'jpg'  => ["\xFF\xD8\xFF"],
+            'jpeg' => ["\xFF\xD8\xFF"],
+            'png'  => ["\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"],
+            'webp' => ["RIFF"],
+        ];
+        if (isset($magicMap[$ext])) {
+            $magicOk = false;
+            foreach ($magicMap[$ext] as $magic) {
+                if (str_starts_with($header, $magic)) { $magicOk = true; break; }
+            }
+            if (!$magicOk) {
+                return 'File gambar tidak valid atau telah dimanipulasi.';
+            }
+        }
+
+        // 7. Content scan — pola skrip berbahaya
+        $fileContent = @file_get_contents($tmpPath);
+        if ($fileContent === false) {
+            return 'Gagal membaca file.';
+        }
+        $dangerousPatterns = [
+            '/\<\?php/i', '/\<\?=/i', '/<script[\s>]/i',
+            '/eval\s*\(/i', '/exec\s*\(/i', '/system\s*\(/i',
+            '/passthru\s*\(/i', '/shell_exec\s*\(/i', '/base64_decode\s*\(/i',
+            '/preg_replace\s*\(.*\/e/i', '/assert\s*\(/i',
+            '/create_function\s*\(/i', '/call_user_func(?:_array)?\s*\(/i',
+            '/file_put_contents\s*\(/i', '/str_rot13\s*\(/i',
+            '/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i',
+            '/phar:\/\//i', '/data:[^,]*base64/i',
+            '/javascript:/i', '/vbscript:/i', '/on\w+\s*=/i',
+        ];
+        foreach ($dangerousPatterns as $pattern) {
+            if (preg_match($pattern, $fileContent)) {
+                return 'File mengandung konten yang tidak diperbolehkan.';
+            }
+        }
+
+        // 8. WEBP chunk signature deep-check
+        if ($ext === 'webp') {
+            if (strlen($fileContent) < 12 || substr($fileContent, 8, 4) !== 'WEBP') {
+                return 'File WEBP tidak valid.';
+            }
+        }
+
+        return null; // Semua validasi lulus
+    }
+
     private function convertToWebp(string $tempPath, string $webpPath, string $extension): bool
     {
         try {

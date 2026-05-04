@@ -295,9 +295,22 @@ class AuthController extends BaseController
             ])->setStatusCode(400);
         }
 
+        // --- Rate Limiting: 5 kali gagal = IP diblokir 10 menit ---
+        $cache       = \Config\Services::cache();
+        $ipAddress   = $this->request->getIPAddress();
+        $throttleKey = 'firebase_fail_' . md5($ipAddress);
+        $lockKey     = 'firebase_lock_' . md5($ipAddress);
+
+        if ($cache->get($lockKey)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Terlalu banyak percobaan. Silakan coba lagi dalam 10 menit.'
+            ])->setStatusCode(429);
+        }
+
         // --- H1: Verify Firebase ID token using Google public keys ---
         try {
-            $verifier = new FirebaseTokenVerifier('webpadangloang');
+            $verifier = new FirebaseTokenVerifier(env('firebase.projectId', 'webpadangloang'));
             $decoded  = $verifier->verify($idToken);
 
             // Extract user information from verified token
@@ -329,6 +342,10 @@ class AuthController extends BaseController
                     $userModel->update($user['id'], ['email' => $email]);
                 }
 
+                // Reset rate limit counter on success
+                $cache->delete($throttleKey);
+                $cache->delete($lockKey);
+
                 // Set session
                 session()->set('user', [
                     'id'       => $user['id'],
@@ -359,6 +376,10 @@ class AuthController extends BaseController
                             'message' => 'Akun nonaktif. Hubungi admin.'
                         ])->setStatusCode(403);
                     }
+
+                    // Reset rate limit counter on success
+                    $cache->delete($throttleKey);
+                    $cache->delete($lockKey);
 
                     session()->set('user', [
                         'id'       => $existingUser['id'],
@@ -402,6 +423,10 @@ class AuthController extends BaseController
                         'nama_lengkap' => $name ?? $username,
                     ]);
 
+                    // Reset rate limit counter on success
+                    $cache->delete($throttleKey);
+                    $cache->delete($lockKey);
+
                     // Set session
                     $newUser = $userModel->find($userId);
                     session()->set('user', [
@@ -419,6 +444,18 @@ class AuthController extends BaseController
                 }
             }
         } catch (\Exception $e) {
+            // Increment fail counter
+            $failCount = (int) ($cache->get($throttleKey) ?? 0) + 1;
+
+            if ($failCount >= 5) {
+                // Lock IP for 10 minutes (600 seconds)
+                $cache->save($lockKey, true, 600);
+                $cache->delete($throttleKey);
+                log_message('warning', 'Firebase auth: IP ' . $ipAddress . ' diblokir setelah 5 kali gagal.');
+            } else {
+                $cache->save($throttleKey, $failCount, 600);
+            }
+
             log_message('error', 'Firebase auth failed: ' . $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,

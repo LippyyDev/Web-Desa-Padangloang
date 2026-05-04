@@ -29,9 +29,9 @@ class FirebaseTokenVerifier
      */
     private int $cacheTtl = 3600;
 
-    public function __construct(string $projectId = 'webpadangloang')
+    public function __construct(string $projectId = '')
     {
-        $this->projectId = $projectId;
+        $this->projectId = $projectId ?: (env('firebase.projectId') ?: 'webpadangloang');
     }
 
     /**
@@ -43,6 +43,9 @@ class FirebaseTokenVerifier
      */
     public function verify(string $idToken): object
     {
+        // Toleransi clock skew hingga 60 detik antara server lokal dan server Firebase
+        JWT::$leeway = 60;
+
         // Fetch Google's public keys
         $publicKeys = $this->getGooglePublicKeys();
 

@@ -414,8 +414,6 @@ class LetterController extends ProtectedController
         $attachmentModel = new LetterAttachmentModel();
         $this->ensureUploadPath($uploadPath);
 
-        $allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp'];
-        
         // Batasi maksimal 5 file
         if (count($files) > 5) {
             session()->setFlashdata('error', 'Maksimal lampiran yang diperbolehkan adalah 5 file. Beberapa file mungkin tidak tersimpan.');
@@ -426,27 +424,179 @@ class LetterController extends ProtectedController
             if (!$file->isValid()) {
                 continue;
             }
-            
-            // Batasi ukuran file 1MB
+
+            // 1. Validasi ukuran file (maks 1 MB)
             if ($file->getSize() > 1048576) {
                 session()->setFlashdata('error', 'Terdapat lampiran yang melebihi batas 1MB atau format tidak didukung dan gagal diunggah.');
                 continue;
             }
 
-            $ext = strtolower($file->getClientExtension());
+            // 2. Ambil nama file asli dan sanitasi
+            $clientName = $file->getClientName();
+
+            // 2a. Cegah null byte injection
+            if (strpos($clientName, "\0") !== false) {
+                session()->setFlashdata('error', 'Nama file tidak valid.');
+                continue;
+            }
+
+            // 2b. Cegah path traversal
+            if (basename($clientName) !== $clientName) {
+                session()->setFlashdata('error', 'Nama file tidak valid.');
+                continue;
+            }
+
+            // 2c. Cegah karakter berbahaya dalam nama file
+            if (preg_match('/[<>:"\/\\\\|?*\x00-\x1F]/', $clientName)) {
+                session()->setFlashdata('error', 'Nama file mengandung karakter yang tidak diperbolehkan.');
+                continue;
+            }
+
+            // 2d. Cegah Unicode RTL override spoofing (\u202E, \u202B, \u202D, \u200F)
+            if (preg_match('/[\x{200F}\x{202E}\x{202B}\x{202D}]/u', $clientName)) {
+                session()->setFlashdata('error', 'Nama file mengandung karakter tidak valid.');
+                continue;
+            }
+
+            // 3. Cek ekstensi ganda berbahaya (misal: shell.php.jpg)
+            $nameParts     = explode('.', $clientName);
+            $dangerousExts = [
+                'php', 'php3', 'php4', 'php5', 'php7', 'phtml', 'phar',
+                'asp', 'aspx', 'jsp', 'exe', 'sh', 'bat', 'cmd', 'py',
+                'rb', 'pl', 'cgi', 'htaccess', 'htpasswd', 'svg',
+                'shtml', 'pht', // Apache alternative PHP/SSI extensions
+            ];
+            $hasDoubleExt = false;
+            if (count($nameParts) > 2) {
+                for ($i = 0; $i < count($nameParts) - 1; $i++) {
+                    if (in_array(strtolower($nameParts[$i]), $dangerousExts)) {
+                        $hasDoubleExt = true;
+                        break;
+                    }
+                }
+            }
+            if ($hasDoubleExt) {
+                session()->setFlashdata('error', 'Terdapat lampiran yang melebihi batas 1MB atau format tidak didukung dan gagal diunggah.');
+                continue;
+            }
+
+            // 4. Cek ekstensi akhir
+            $allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'webp'];
+            $ext = strtolower(pathinfo($clientName, PATHINFO_EXTENSION));
             if (!in_array($ext, $allowedExtensions)) {
                 session()->setFlashdata('error', 'Terdapat lampiran yang melebihi batas 1MB atau format tidak didukung dan gagal diunggah.');
                 continue;
             }
 
+            // 5. Whitelist MIME type dari header request (lapisan tambahan)
+            $allowedMimes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'image/jpeg',
+                'image/png',
+                'image/webp',
+            ];
+            $clientMime = $file->getClientMimeType();
+            if (!in_array($clientMime, $allowedMimes)) {
+                session()->setFlashdata('error', 'Terdapat lampiran yang melebihi batas 1MB atau format tidak didukung dan gagal diunggah.');
+                continue;
+            }
+
+            // 6. Validasi Magic Bytes — baca 12 byte pertama dari isi file
+            $tmpPath  = $file->getTempName();
+            $fh       = @fopen($tmpPath, 'rb');
+            $header   = $fh ? fread($fh, 12) : '';
+            if ($fh) fclose($fh);
+
+            $magicMap = [
+                'pdf'  => ["\x25\x50\x44\x46"],                    // %PDF
+                'jpg'  => ["\xFF\xD8\xFF"],                         // JPEG SOI
+                'jpeg' => ["\xFF\xD8\xFF"],
+                'png'  => ["\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"],   // PNG
+                'webp' => ["RIFF"],                                  // RIFF (WebP)
+                'doc'  => ["\xD0\xCF\x11\xE0"],                    // OLE2
+                'docx' => ["\x50\x4B\x03\x04"],                    // PK zip
+            ];
+
+            if (isset($magicMap[$ext])) {
+                $magicOk = false;
+                foreach ($magicMap[$ext] as $magic) {
+                    if (str_starts_with($header, $magic)) {
+                        $magicOk = true;
+                        break;
+                    }
+                }
+                if (!$magicOk) {
+                    session()->setFlashdata('error', 'Terdapat lampiran yang melebihi batas 1MB atau format tidak didukung dan gagal diunggah.');
+                    continue;
+                }
+            }
+
+            // 7. Scan konten file untuk pola skrip berbahaya
+            $fileContent = @file_get_contents($tmpPath);
+            if ($fileContent === false) {
+                session()->setFlashdata('error', 'Gagal membaca lampiran.');
+                continue;
+            }
+
+            $dangerousPatterns = [
+                '/\<\?php/i',
+                '/\<\?=/i',
+                '/<script[\s>]/i',
+                '/eval\s*\(/i',
+                '/exec\s*\(/i',
+                '/system\s*\(/i',
+                '/passthru\s*\(/i',
+                '/shell_exec\s*\(/i',
+                '/base64_decode\s*\(/i',
+                // Tambahan pola obfuscation & RCE lanjutan
+                '/preg_replace\s*\(.*\/e/i',           // preg_replace /e modifier RCE
+                '/assert\s*\(/i',                       // assert() eksekusi string
+                '/create_function\s*\(/i',              // create_function() RCE lama
+                '/call_user_func(?:_array)?\s*\(/i',    // arbitrary function call
+                '/file_put_contents\s*\(/i',            // dropper menulis file baru
+                '/str_rot13\s*\(/i',                    // obfuscation via rot13
+                '/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i', // superglobal access
+                '/phar:\/\//i',                         // PHAR stream wrapper
+                '/data:[^,]*base64/i',                  // data URI base64
+                '/javascript:/i',                       // javascript: URI
+                '/vbscript:/i',                         // vbscript: URI
+                '/on\w+\s*=/i',                         // inline event handler (onerror=, onload=, dst)
+            ];
+            $dangerous = false;
+            foreach ($dangerousPatterns as $pattern) {
+                if (preg_match($pattern, $fileContent)) {
+                    $dangerous = true;
+                    break;
+                }
+            }
+            if ($dangerous) {
+                session()->setFlashdata('error', 'Lampiran mengandung konten yang tidak diperbolehkan.');
+                continue;
+            }
+
+            // 8. Validasi tambahan WEBP — pastikan chunk WEBP ada setelah header RIFF
+            if ($ext === 'webp') {
+                // Format WEBP: RIFF[4 bytes ukuran]WEBP
+                if (strlen($fileContent) < 12 || substr($fileContent, 8, 4) !== 'WEBP') {
+                    session()->setFlashdata('error', 'Terdapat lampiran yang melebihi batas 1MB atau format tidak didukung dan gagal diunggah.');
+                    continue;
+                }
+            }
+
+            // 9. Semua validasi lulus — simpan file
             $newName = $file->getRandomName();
             $file->move($uploadPath, $newName);
+
+            // Gunakan MIME yang terdeteksi PHP (bukan dari client) untuk penyimpanan
+            $safeMime = mime_content_type($uploadPath . '/' . $newName) ?: $clientMime;
 
             $attachmentModel->insert([
                 'letter_id'     => $letterId,
                 'file_path'     => 'letters/' . $newName,
-                'original_name' => $file->getClientName(),
-                'mime_type'     => $file->getClientMimeType(),
+                'original_name' => basename($clientName),
+                'mime_type'     => $safeMime,
                 'file_size'     => $file->getSize(),
             ]);
         }
@@ -500,9 +650,17 @@ class LetterController extends ProtectedController
             return $this->response->setStatusCode(404);
         }
 
+        // Gunakan deteksi MIME nyata dari file (bukan dari data tersimpan)
+        $detectedMime = mime_content_type($filePath) ?: 'application/octet-stream';
+
+        // Sanitasi nama file untuk header
+        $safeOriginalName = preg_replace('/[^\w\s.\-]/', '_', $att['original_name']);
+
         return $this->response
-            ->setHeader('Content-Type', $att['mime_type'])
-            ->setHeader('Content-Disposition', 'inline; filename="' . $att['original_name'] . '"')
+            ->setHeader('Content-Type', $detectedMime)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $safeOriginalName . '"')
+            ->setHeader('X-Content-Type-Options', 'nosniff')
+            ->setHeader('Content-Security-Policy', "default-src 'none'")
             ->setBody(file_get_contents($filePath));
     }
 
@@ -536,9 +694,17 @@ class LetterController extends ProtectedController
             return $this->response->setStatusCode(404);
         }
 
+        // Gunakan deteksi MIME nyata dari file (bukan dari data tersimpan)
+        $detectedMime = mime_content_type($filePath) ?: 'application/octet-stream';
+
+        // Sanitasi nama file untuk header
+        $safeOriginalName = preg_replace('/[^\w\s.\-]/', '_', $att['original_name']);
+
         return $this->response
-            ->setHeader('Content-Type', $att['mime_type'])
-            ->setHeader('Content-Disposition', 'inline; filename="' . $att['original_name'] . '"')
+            ->setHeader('Content-Type', $detectedMime)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $safeOriginalName . '"')
+            ->setHeader('X-Content-Type-Options', 'nosniff')
+            ->setHeader('Content-Security-Policy', "default-src 'none'")
             ->setBody(file_get_contents($filePath));
     }
 }

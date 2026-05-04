@@ -37,6 +37,18 @@
     </div>
 </div>
 
+<script>
+// Inject Firebase config dari .env — tidak hardcoded di JS
+window.firebaseConfig = {
+  apiKey:            "<?= esc(env('firebase.apiKey')) ?>",
+  authDomain:        "<?= esc(env('firebase.authDomain')) ?>",
+  projectId:         "<?= esc(env('firebase.projectId')) ?>",
+  storageBucket:     "<?= esc(env('firebase.storageBucket')) ?>",
+  messagingSenderId: "<?= esc(env('firebase.messagingSenderId')) ?>",
+  appId:             "<?= esc(env('firebase.appId')) ?>",
+  measurementId:     "<?= esc(env('firebase.measurementId')) ?>"
+};
+</script>
 <script type="module" src="<?= base_url('assets/js/firebase-auth.js') ?>"></script>
 <script>
 // Wait for module to load and attach event listener

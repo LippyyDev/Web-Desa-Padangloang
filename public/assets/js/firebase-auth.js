@@ -1,13 +1,9 @@
-// Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyACfXY4LQq04am5-ONx1S_U4bXitcFYyFo",
-  authDomain: "webpadangloang.firebaseapp.com",
-  projectId: "webpadangloang",
-  storageBucket: "webpadangloang.firebasestorage.app",
-  messagingSenderId: "166226496374",
-  appId: "1:166226496374:web:f641ec2a961a583a8b8857",
-  measurementId: "G-VFS3730759",
-};
+// Firebase Configuration — diinject oleh PHP view dari .env
+// Lihat: app/Views/Guest/auth/login.php & register.php
+if (!window.firebaseConfig) {
+  console.error('[Firebase] window.firebaseConfig tidak ditemukan. Pastikan PHP view sudah menginjeknya.');
+}
+const firebaseConfig = window.firebaseConfig || {};
 
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
@@ -58,8 +54,17 @@ async function signInWithGoogle(event) {
     // Get ID token
     const idToken = await user.getIdToken(true);
 
-    const csrfMeta = document.querySelector('meta[name="X-CSRF-TOKEN"]');
-    const csrfToken = csrfMeta ? csrfMeta.content : "";
+    // Baca CSRF token dari cookie (selalu fresh, tidak terpengaruh regenerate)
+    function getCsrfCookie() {
+      const name = 'csrf_cookie_name=';
+      const cookies = document.cookie.split(';');
+      for (let c of cookies) {
+        c = c.trim();
+        if (c.startsWith(name)) return decodeURIComponent(c.substring(name.length));
+      }
+      return '';
+    }
+    const csrfToken = getCsrfCookie();
 
     // Send token to server
     const response = await fetch("/auth/firebase", {
