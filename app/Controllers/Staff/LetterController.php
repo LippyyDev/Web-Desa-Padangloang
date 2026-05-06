@@ -611,6 +611,7 @@ class LetterController extends ProtectedController
                 continue;
             }
 
+            // Pola inti berbahaya untuk semua tipe file
             $dangerousPatterns = [
                 '/\<\?php/i',
                 '/\<\?=/i',
@@ -627,13 +628,21 @@ class LetterController extends ProtectedController
                 '/call_user_func(?:_array)?\s*\(/i',
                 '/file_put_contents\s*\(/i',
                 '/str_rot13\s*\(/i',
-                '/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i',
                 '/phar:\/\//i',
-                '/data:[^,]*base64/i',
                 '/javascript:/i',
                 '/vbscript:/i',
-                '/on\w+\s*=/i',
             ];
+
+            // Pola tambahan HANYA untuk file non-Office
+            // (docx/doc/xlsx/xls adalah ZIP/OLE2 berisi OOXML — XML-nya secara legitimate
+            //  mengandung atribut on*= dan properti dengan pola mirip superglobal PHP)
+            $isOfficeFile = in_array($ext, ['doc', 'docx', 'xls', 'xlsx']);
+            if (!$isOfficeFile) {
+                $dangerousPatterns[] = '/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i';
+                $dangerousPatterns[] = '/data:[^,]*base64/i';
+                $dangerousPatterns[] = '/on\w+\s*=/i';
+            }
+
             $dangerous = false;
             foreach ($dangerousPatterns as $pattern) {
                 if (preg_match($pattern, $fileContent)) {

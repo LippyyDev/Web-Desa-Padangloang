@@ -540,6 +540,7 @@ class LetterController extends ProtectedController
                 continue;
             }
 
+            // Pola inti yang berbahaya di semua tipe file
             $dangerousPatterns = [
                 '/\<\?php/i',
                 '/\<\?=/i',
@@ -550,20 +551,27 @@ class LetterController extends ProtectedController
                 '/passthru\s*\(/i',
                 '/shell_exec\s*\(/i',
                 '/base64_decode\s*\(/i',
-                // Tambahan pola obfuscation & RCE lanjutan
-                '/preg_replace\s*\(.*\/e/i',           // preg_replace /e modifier RCE
-                '/assert\s*\(/i',                       // assert() eksekusi string
-                '/create_function\s*\(/i',              // create_function() RCE lama
-                '/call_user_func(?:_array)?\s*\(/i',    // arbitrary function call
-                '/file_put_contents\s*\(/i',            // dropper menulis file baru
-                '/str_rot13\s*\(/i',                    // obfuscation via rot13
-                '/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i', // superglobal access
-                '/phar:\/\//i',                         // PHAR stream wrapper
-                '/data:[^,]*base64/i',                  // data URI base64
-                '/javascript:/i',                       // javascript: URI
-                '/vbscript:/i',                         // vbscript: URI
-                '/on\w+\s*=/i',                         // inline event handler (onerror=, onload=, dst)
+                '/preg_replace\s*\(.*\/e/i',
+                '/assert\s*\(/i',
+                '/create_function\s*\(/i',
+                '/call_user_func(?:_array)?\s*\(/i',
+                '/file_put_contents\s*\(/i',
+                '/str_rot13\s*\(/i',
+                '/phar:\/\//i',
+                '/javascript:/i',
+                '/vbscript:/i',
             ];
+
+            // Pola tambahan yang HANYA aman dicek untuk file non-Office
+            // (docx/doc adalah ZIP berisi OOXML — XML-nya secara legitimate
+            //  mengandung atribut on*= dan properti dengan pola mirip superglobal)
+            $isOfficeFile = in_array($ext, ['doc', 'docx']);
+            if (!$isOfficeFile) {
+                $dangerousPatterns[] = '/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i';
+                $dangerousPatterns[] = '/data:[^,]*base64/i';
+                $dangerousPatterns[] = '/on\w+\s*=/i';
+            }
+
             $dangerous = false;
             foreach ($dangerousPatterns as $pattern) {
                 if (preg_match($pattern, $fileContent)) {
