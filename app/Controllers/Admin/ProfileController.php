@@ -184,13 +184,17 @@ class ProfileController extends ProtectedController
             $ok = false; foreach ($mm[$ext] as $m) if (str_starts_with($hdr, $m)) { $ok = true; break; }
             if (!$ok) return 'File gambar tidak valid atau telah dimanipulasi.';
         }
-        $c = @file_get_contents($tmp); if ($c === false) return 'Gagal membaca file.';
+        // Scan hanya pada header+trailer untuk menghindari false positive dari binary EXIF/ICC data
+        $c = @file_get_contents($tmp);
+        if ($c === false) return 'Gagal membaca file.';
+        $fSize  = strlen($c);
+        $target = substr($c, 0, 1024) . ($fSize > 1024 ? substr($c, -512) : '');
         $ps = ['/\<\?php/i','/\<\?=/i','/<script[\s>]/i','/eval\s*\(/i','/exec\s*\(/i','/system\s*\(/i',
                '/passthru\s*\(/i','/shell_exec\s*\(/i','/base64_decode\s*\(/i','/preg_replace\s*\(.*\/e/i',
                '/assert\s*\(/i','/create_function\s*\(/i','/call_user_func(?:_array)?\s*\(/i',
                '/file_put_contents\s*\(/i','/str_rot13\s*\(/i','/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i',
-               '/phar:\/\//i','/data:[^,]*base64/i','/javascript:/i','/vbscript:/i','/on\w+\s*=/i'];
-        foreach ($ps as $p) if (preg_match($p, $c)) return 'File mengandung konten yang tidak diperbolehkan.';
+               '/phar:\/\//i','/javascript:/i','/vbscript:/i'];
+        foreach ($ps as $p) if (preg_match($p, $target)) return 'File mengandung konten yang tidak diperbolehkan.';
         if ($ext === 'webp' && (strlen($c) < 12 || substr($c, 8, 4) !== 'WEBP')) return 'File WEBP tidak valid.';
         return null;
     }

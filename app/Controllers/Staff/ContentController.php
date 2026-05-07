@@ -1429,10 +1429,18 @@ class ContentController extends ProtectedController
         }
 
         // 7. Content scan — pola skrip berbahaya
+        // Scan dilakukan HANYA pada header (1024 byte pertama) dan trailer (512 byte terakhir)
+        // untuk menghindari false positive dari binary EXIF/ICC profile data di tengah gambar.
         $fileContent = @file_get_contents($tmpPath);
         if ($fileContent === false) {
             return 'Gagal membaca file.';
         }
+        $fileSize    = strlen($fileContent);
+        $scanHead    = substr($fileContent, 0, 1024);
+        $scanTail    = $fileSize > 1024 ? substr($fileContent, -512) : '';
+        $scanTarget  = $scanHead . $scanTail;
+
+        // Pattern yang spesifik untuk PHP/script injection — tidak overly-broad
         $dangerousPatterns = [
             '/\<\?php/i', '/\<\?=/i', '/<script[\s>]/i',
             '/eval\s*\(/i', '/exec\s*\(/i', '/system\s*\(/i',
@@ -1441,11 +1449,10 @@ class ContentController extends ProtectedController
             '/create_function\s*\(/i', '/call_user_func(?:_array)?\s*\(/i',
             '/file_put_contents\s*\(/i', '/str_rot13\s*\(/i',
             '/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i',
-            '/phar:\/\//i', '/data:[^,]*base64/i',
-            '/javascript:/i', '/vbscript:/i', '/on\w+\s*=/i',
+            '/phar:\/\//i', '/javascript:/i', '/vbscript:/i',
         ];
         foreach ($dangerousPatterns as $pattern) {
-            if (preg_match($pattern, $fileContent)) {
+            if (preg_match($pattern, $scanTarget)) {
                 return 'File mengandung konten yang tidak diperbolehkan.';
             }
         }

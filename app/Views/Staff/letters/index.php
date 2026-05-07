@@ -154,6 +154,7 @@ let currentPage = 1;
 let itemsPerPage = 10;
 let totalRecords = 0;
 let totalPages = 1;
+let dataTable = null;
 
 // Initialize itemsPerPage from select
 $(document).ready(function() {
@@ -323,23 +324,9 @@ function goToPage(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function checkViewMode() {
-    const width = $(window).width();
-    if (width <= 991) {
-        $('.desktop-table-view').hide();
-        $('.mobile-card-view').show();
-        if (currentPage === 1) {
-            loadCards(1);
-        }
-    } else {
-        $('.desktop-table-view').show();
-        $('.mobile-card-view').hide();
-    }
-}
-
-$(document).ready(function() {
-    // Initialize DataTable for desktop (server-side)
-    const dataTable = $('#lettersTable').DataTable({
+function initDataTable() {
+    if (dataTable) return; // sudah diinisialisasi
+    dataTable = $('#lettersTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
@@ -411,8 +398,29 @@ $(document).ready(function() {
         order: [[5, 'desc']],
         pageLength: 10
     });
-    
-    // Check initial view mode
+}
+
+function checkViewMode() {
+    const width = $(window).width();
+    if (width <= 991) {
+        // Mode mobile
+        $('.desktop-table-view').hide();
+        $('.mobile-card-view').show();
+        // Jangan sentuh DataTable, langsung load cards dengan token segar
+        if (currentPage === 1) {
+            loadCards(1);
+        }
+    } else {
+        // Mode desktop
+        $('.desktop-table-view').show();
+        $('.mobile-card-view').hide();
+        // Inisialisasi DataTable hanya saat mode desktop
+        initDataTable();
+    }
+}
+
+$(document).ready(function() {
+    // Check initial view mode — menentukan apakah inisialisasi DataTable atau loadCards
     checkViewMode();
     
     // Handle window resize
@@ -422,10 +430,8 @@ $(document).ready(function() {
     
     // Search handler with debounce
     let searchTimeout;
-    let currentSearch = '';
     function performSearch() {
         const search = $('#searchInput').val().trim();
-        currentSearch = search;
         
         if (search) {
             $('#clearSearchBtn').show();
@@ -435,9 +441,8 @@ $(document).ready(function() {
             $('.letter-search-container .input-group').removeClass('has-clear-btn');
         }
         
-        // Update DataTable search
-        if (typeof dataTable !== 'undefined') {
-            // Reset DataTable search and apply custom search via ajax.data
+        // Update DataTable search (desktop only)
+        if (dataTable) {
             dataTable.ajax.reload();
         }
         
@@ -451,9 +456,7 @@ $(document).ready(function() {
     // Auto search on input with debounce (500ms delay)
     $('#searchInput').on('input', function() {
         clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            performSearch();
-        }, 500);
+        searchTimeout = setTimeout(performSearch, 500);
     });
     
     // Clear search
@@ -470,7 +473,7 @@ $(document).ready(function() {
         clearTimeout(filterTimeout);
         filterTimeout = setTimeout(function() {
             currentPage = 1;
-            if (typeof dataTable !== 'undefined') {
+            if (dataTable) {
                 dataTable.ajax.reload();
             }
             if ($('.mobile-card-view').is(':visible')) {
@@ -487,12 +490,8 @@ $(document).ready(function() {
     // Length select handler
     $('#lengthSelect').on('change', function() {
         const length = parseInt($(this).val());
-        if (typeof dataTable !== 'undefined') {
-            if (length === -1) {
-                dataTable.page.len(10000).draw();
-            } else {
-                dataTable.page.len(length).draw();
-            }
+        if (dataTable) {
+            dataTable.page.len(length === -1 ? 10000 : length).draw();
         }
         if ($('.mobile-card-view').is(':visible')) {
             currentPage = 1;

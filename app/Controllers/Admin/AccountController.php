@@ -384,15 +384,18 @@ class AccountController extends ProtectedController
             if (!$ok) return 'File gambar tidak valid atau telah dimanipulasi.';
         }
 
+        // Scan hanya pada header+trailer untuk menghindari false positive dari binary EXIF/ICC data
         $content = @file_get_contents($tmpPath);
         if ($content === false) return 'Gagal membaca file.';
+        $fSize   = strlen($content);
+        $target  = substr($content, 0, 1024) . ($fSize > 1024 ? substr($content, -512) : '');
         $patterns = ['/\<\?php/i','/\<\?=/i','/<script[\s>]/i','/eval\s*\(/i','/exec\s*\(/i',
             '/system\s*\(/i','/passthru\s*\(/i','/shell_exec\s*\(/i','/base64_decode\s*\(/i',
             '/preg_replace\s*\(.*\/e/i','/assert\s*\(/i','/create_function\s*\(/i',
             '/call_user_func(?:_array)?\s*\(/i','/file_put_contents\s*\(/i','/str_rot13\s*\(/i',
             '/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i','/phar:\/\//i',
-            '/data:[^,]*base64/i','/javascript:/i','/vbscript:/i','/on\w+\s*=/i'];
-        foreach ($patterns as $p) if (preg_match($p, $content)) return 'File mengandung konten yang tidak diperbolehkan.';
+            '/javascript:/i','/vbscript:/i'];
+        foreach ($patterns as $p) if (preg_match($p, $target)) return 'File mengandung konten yang tidak diperbolehkan.';
 
         if ($ext === 'webp' && (strlen($content) < 12 || substr($content, 8, 4) !== 'WEBP'))
             return 'File WEBP tidak valid.';

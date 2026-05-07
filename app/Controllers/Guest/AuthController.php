@@ -240,9 +240,14 @@ class AuthController extends BaseController
             return redirect()->back()->with('error', 'Email tidak sesuai.');
         }
 
-        // Cek OTP
-        if ($resetData['otp'] !== $otp) {
-            return redirect()->back()->with('error', 'OTP tidak valid.');
+        // --- Rate Limiting: Cegah Brute Force OTP ---
+        $cache = \Config\Services::cache();
+        $ipAddress = $this->request->getIPAddress();
+        $throttleKey = 'otp_fail_' . md5($ipAddress . '_' . $email);
+        $lockKey     = 'otp_lock_' . md5($ipAddress . '_' . $email);
+
+        if ($cache->get($lockKey)) {
+            return redirect()->to('/forgot-password')->with('error', 'Terlalu banyak percobaan OTP. Sesi diblokir sementara. Silakan request reset password lagi nanti.');
         }
 
         // Cek kadaluarsa
@@ -250,6 +255,29 @@ class AuthController extends BaseController
             session()->remove('pending_password_reset');
             return redirect()->to('/forgot-password')->with('error', 'Kode OTP sudah kadaluarsa. Silakan request reset password lagi.');
         }
+
+        // Cek OTP
+        if ($resetData['otp'] !== $otp) {
+            $failCount = (int) ($cache->get($throttleKey) ?? 0);
+            $failCount++;
+
+            if ($failCount >= 5) {
+                // Kunci selama 15 menit (900 detik)
+                $cache->save($lockKey, true, 900);
+                $cache->delete($throttleKey);
+                session()->remove('pending_password_reset');
+                return redirect()->to('/forgot-password')->with('error', 'Terlalu banyak percobaan OTP yang salah. Sesi reset dibatalkan demi keamanan.');
+            }
+
+            // Simpan jumlah kegagalan (berlaku 15 menit)
+            $cache->save($throttleKey, $failCount, 900);
+            $sisa = 5 - $failCount;
+            return redirect()->back()->with('error', 'OTP tidak valid. Sisa percobaan: ' . $sisa);
+        }
+
+        // OTP Valid - Hapus cache kegagalan
+        $cache->delete($throttleKey);
+        $cache->delete($lockKey);
 
         // --- M1: Validasi kekuatan password ---
         if (strlen($password) < 8) {

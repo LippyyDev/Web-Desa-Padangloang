@@ -534,11 +534,15 @@ class LetterController extends ProtectedController
             }
 
             // 7. Scan konten file untuk pola skrip berbahaya
+            // Scan HANYA header (1024 byte pertama) + trailer (512 byte terakhir)
+            // untuk menghindari false positive dari binary EXIF/ICC profile di tengah gambar.
             $fileContent = @file_get_contents($tmpPath);
             if ($fileContent === false) {
                 session()->setFlashdata('error', 'Gagal membaca lampiran.');
                 continue;
             }
+            $fSize      = strlen($fileContent);
+            $scanTarget = substr($fileContent, 0, 1024) . ($fSize > 1024 ? substr($fileContent, -512) : '');
 
             // Pola inti yang berbahaya di semua tipe file
             $dangerousPatterns = [
@@ -568,13 +572,11 @@ class LetterController extends ProtectedController
             $isOfficeFile = in_array($ext, ['doc', 'docx']);
             if (!$isOfficeFile) {
                 $dangerousPatterns[] = '/\$_(?:GET|POST|REQUEST|COOKIE|SERVER|FILES|ENV)/i';
-                $dangerousPatterns[] = '/data:[^,]*base64/i';
-                $dangerousPatterns[] = '/on\w+\s*=/i';
             }
 
             $dangerous = false;
             foreach ($dangerousPatterns as $pattern) {
-                if (preg_match($pattern, $fileContent)) {
+                if (preg_match($pattern, $scanTarget)) {
                     $dangerous = true;
                     break;
                 }
