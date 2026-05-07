@@ -25,7 +25,10 @@ abstract class BaseController extends Controller
      *
      * @var array
      */
-    protected $helpers = ['url', 'form', 'text', 'htmlpurifier'];
+    protected $helpers = ['url', 'form', 'text'];
+
+    // htmlpurifier helper dimuat secara lazy (hanya saat dibutuhkan)
+    // karena HTMLPurifier berat dan memperlambat semua request di shared hosting.
 
     /**
      * Session service instance.

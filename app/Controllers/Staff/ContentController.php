@@ -340,7 +340,6 @@ class ContentController extends ProtectedController
         $mediaModel = new GalleryMediaModel();
         $path       = FCPATH . 'uploads/gallery';
         $this->ensureUploadPath($path);
-        $image      = \Config\Services::image();
 
         foreach ($files as $file) {
             if (!$file->isValid()) {
@@ -1470,23 +1469,64 @@ class ContentController extends ProtectedController
     private function convertToWebp(string $tempPath, string $webpPath, string $extension): bool
     {
         try {
-            if (strtolower($extension) === 'webp') {
-                // Source is already WEBP — GD cannot re-open it via convert().
-                // Simply rename/copy to the destination path.
+            // Naikkan memory limit untuk proses gambar besar di shared hosting
+            @ini_set('memory_limit', '256M');
+
+            $ext = strtolower($extension);
+
+            if ($ext === 'webp') {
+                // Source sudah WEBP — langsung rename/copy, tidak perlu konversi
                 if (!rename($tempPath, $webpPath)) {
                     copy($tempPath, $webpPath);
                     @unlink($tempPath);
                 }
-            } else {
-                $image = \Config\Services::image();
-                $image->withFile($tempPath)
-                    ->convert(IMAGETYPE_WEBP)
-                    ->save($webpPath, 85);
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
+                return true;
             }
-            return true;
+
+            // Gunakan native PHP GD langsung (jauh lebih cepat dari CI4 image service)
+            $image = null;
+            switch ($ext) {
+                case 'jpg':
+                case 'jpeg':
+                    $image = @imagecreatefromjpeg($tempPath);
+                    break;
+                case 'png':
+                    $image = @imagecreatefrompng($tempPath);
+                    if ($image) {
+                        // Preserve transparency untuk PNG
+                        imagepalettetotruecolor($image);
+                        imagealphablending($image, true);
+                        imagesavealpha($image, true);
+                    }
+                    break;
+                default:
+                    // Fallback ke CI4 image service untuk format lain
+                    $ci4image = \Config\Services::image();
+                    $ci4image->withFile($tempPath)
+                        ->convert(IMAGETYPE_WEBP)
+                        ->save($webpPath, 85);
+                    if (file_exists($tempPath)) {
+                        @unlink($tempPath);
+                    }
+                    return true;
+            }
+
+            if (!$image) {
+                log_message('error', 'convertToWebp: imagecreatefrom* failed for ' . $tempPath);
+                @unlink($tempPath);
+                return false;
+            }
+
+            // Simpan sebagai WebP dengan kualitas 85
+            $result = imagewebp($image, $webpPath, 85);
+            imagedestroy($image);
+
+            if (file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
+
+            return $result;
+
         } catch (\Exception $e) {
             if (file_exists($tempPath)) {
                 @unlink($tempPath);
@@ -1504,6 +1544,12 @@ class ContentController extends ProtectedController
     {
         if (!function_exists('exif_read_data')) {
             return; // EXIF extension not available
+        }
+
+        // WEBP files tidak butuh EXIF fix — skip untuk performa lebih baik
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        if ($ext === 'webp') {
+            return;
         }
 
         $exif = @exif_read_data($filePath);

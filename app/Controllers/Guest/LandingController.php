@@ -253,6 +253,9 @@ class LandingController extends BaseController
             return redirect()->to('/berita')->with('error', 'Berita tidak ditemukan.');
         }
 
+        // Load htmlpurifier hanya di sini karena View menggunakan purify_html()
+        helper('htmlpurifier');
+
         return view('Guest/berita_detail', [
             'item' => $news,
         ]);
@@ -365,6 +368,9 @@ class LandingController extends BaseController
                 $item['embed_url'] = $this->toEmbedUrl($item['media_path']);
             }
         }
+
+        // Load htmlpurifier hanya di sini karena View menggunakan purify_html()
+        helper('htmlpurifier');
 
         return view('Guest/project_detail', [
             'item'  => $project,
